@@ -1,5 +1,13 @@
 # Fitness API - Simple Backend
 
+Before this can be used, you must create a .env file.
+DB_HOST={public IP address of SQL database}
+DB_PORT=5432
+DB_NAME=postgres
+DB_USER=postgres
+DB_PASSWORD=postgres
+
+
 A basic FastAPI backend for fitness tracking. This is a minimal implementation that we'll build upon.
 
 ## Features
