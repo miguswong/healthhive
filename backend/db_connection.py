@@ -44,12 +44,17 @@ def initialize_database():
         # Create activities table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS activities (
-                id SERIAL PRIMARY KEY,
+                activity_id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-                type VARCHAR(100) NOT NULL,
+                activity_date DATE NOT NULL,
+                activity_type VARCHAR(100) NOT NULL,
                 distance DECIMAL(10,2),
-                duration INTEGER,
-                date DATE NOT NULL,
+                distance_units VARCHAR(20),
+                time DECIMAL(10,3),
+                time_units VARCHAR(20),
+                speed DECIMAL(10,2),
+                speed_units VARCHAR(20),
+                calories_burned INTEGER,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)

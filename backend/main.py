@@ -6,6 +6,9 @@ import os
 from dotenv import load_dotenv
 from db_connection import test_gcp_postgres_connection, get_connection_info, initialize_database, get_db_connection
 from fastapi import HTTPException
+import csv
+import io
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -33,12 +36,17 @@ class User(BaseModel):
     email: str
 
 class Activity(BaseModel):
-    id: int
+    activity_id: Optional[int] = None
     user_id: int
-    type: str
-    distance: float
-    duration: int
-    date: str
+    activity_type: str
+    distance: Optional[float] = None
+    distance_units: Optional[str] = None
+    time: Optional[float] = None
+    time_units: Optional[str] = None
+    speed: Optional[float] = None
+    speed_units: Optional[str] = None
+    calories_burned: Optional[int] = None
+    activity_date: str
 
 # Basic endpoints
 @app.get("/")
@@ -118,12 +126,32 @@ async def get_activities(user_id: Optional[int] = None):
     conn = get_db_connection()
     cursor = conn.cursor()
     if user_id:
-        cursor.execute("SELECT id, user_id, type, distance, duration, date FROM activities WHERE user_id = %s ORDER BY date DESC", (user_id,))
+        cursor.execute("""
+            SELECT activity_id, user_id, activity_type, distance, distance_units, 
+                   time, time_units, speed, speed_units, calories_burned, activity_date 
+            FROM activities WHERE user_id = %s ORDER BY activity_date DESC
+        """, (user_id,))
     else:
-        cursor.execute("SELECT id, user_id, type, distance, duration, date FROM activities ORDER BY date DESC")
+        cursor.execute("""
+            SELECT activity_id, user_id, activity_type, distance, distance_units, 
+                   time, time_units, speed, speed_units, calories_burned, activity_date 
+            FROM activities ORDER BY activity_date DESC
+        """)
     activities = []
     for row in cursor.fetchall():
-        activities.append(Activity(id=row[0], user_id=row[1], type=row[2], distance=float(row[3]) if row[3] is not None else None, duration=row[4], date=str(row[5])))
+        activities.append(Activity(
+            activity_id=row[0],
+            user_id=row[1],
+            activity_type=row[2],
+            distance=float(row[3]) if row[3] is not None else None,
+            distance_units=row[4],
+            time=float(row[5]) if row[5] is not None else None,
+            time_units=row[6],
+            speed=float(row[7]) if row[7] is not None else None,
+            speed_units=row[8],
+            calories_burned=row[9],
+            activity_date=str(row[10])
+        ))
     cursor.close()
     conn.close()
     return activities
@@ -133,12 +161,28 @@ async def get_activity(activity_id: int):
     """Get a specific activity"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, user_id, type, distance, duration, date FROM activities WHERE id = %s", (activity_id,))
+    cursor.execute("""
+        SELECT activity_id, user_id, activity_type, distance, distance_units, 
+               time, time_units, speed, speed_units, calories_burned, activity_date 
+        FROM activities WHERE activity_id = %s
+    """, (activity_id,))
     row = cursor.fetchone()
     cursor.close()
     conn.close()
     if row:
-        return Activity(id=row[0], user_id=row[1], type=row[2], distance=float(row[3]) if row[3] is not None else None, duration=row[4], date=str(row[5]))
+        return Activity(
+            activity_id=row[0],
+            user_id=row[1],
+            activity_type=row[2],
+            distance=float(row[3]) if row[3] is not None else None,
+            distance_units=row[4],
+            time=float(row[5]) if row[5] is not None else None,
+            time_units=row[6],
+            speed=float(row[7]) if row[7] is not None else None,
+            speed_units=row[8],
+            calories_burned=row[9],
+            activity_date=str(row[10])
+        )
     return {"error": "Activity not found"}
 
 @app.post("/activities", response_model=Activity)
@@ -147,21 +191,33 @@ async def create_activity(activity: Activity):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO activities (user_id, type, distance, duration, date) VALUES (%s, %s, %s, %s, %s) RETURNING id, user_id, type, distance, duration, date, created_at",
-            (activity.user_id, activity.type, activity.distance, activity.duration, activity.date)
-        )
+        cursor.execute("""
+            INSERT INTO activities (user_id, activity_type, distance, distance_units, 
+                                  time, time_units, speed, speed_units, calories_burned, activity_date) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) 
+            RETURNING activity_id, user_id, activity_type, distance, distance_units, 
+                     time, time_units, speed, speed_units, calories_burned, activity_date
+        """, (
+            activity.user_id, activity.activity_type, activity.distance, activity.distance_units,
+            activity.time, activity.time_units, activity.speed, activity.speed_units, 
+            activity.calories_burned, activity.activity_date
+        ))
         row = cursor.fetchone()
         conn.commit()
         cursor.close()
         conn.close()
         return Activity(
-            id=row[0],
+            activity_id=row[0],
             user_id=row[1],
-            type=row[2],
+            activity_type=row[2],
             distance=float(row[3]) if row[3] is not None else None,
-            duration=row[4],
-            date=str(row[5])
+            distance_units=row[4],
+            time=float(row[5]) if row[5] is not None else None,
+            time_units=row[6],
+            speed=float(row[7]) if row[7] is not None else None,
+            speed_units=row[8],
+            calories_burned=row[9],
+            activity_date=str(row[10])
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -174,6 +230,66 @@ async def connect_strava():
         "message": "Strava integration coming soon!",
         "client_id": os.getenv("STRAVA_CLIENT_ID", "not configured")
     }
+
+@app.post("/load-activity-data")
+async def load_activity_data():
+    """Load activity data from CSV file into the database"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Read CSV file
+        csv_file_path = "fakeData/activityData.csv"
+        activities_loaded = 0
+        
+        with open(csv_file_path, 'r', encoding='utf-8') as file:
+            csv_reader = csv.DictReader(file)
+            
+            for row in csv_reader:
+                # Skip if activity_id already exists
+                cursor.execute("SELECT activity_id FROM activities WHERE activity_id = %s", (int(row['activity_id']),))
+                if cursor.fetchone():
+                    continue
+                
+                # Parse date
+                activity_date = datetime.strptime(row['activity_date'], '%m/%d/%Y').date()
+                
+                # Insert activity using the user_id from CSV
+                cursor.execute("""
+                    INSERT INTO activities (
+                        activity_id, user_id, activity_date, activity_type, 
+                        distance, distance_units, time, time_units, 
+                        speed, speed_units, calories_burned
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    int(row['activity_id']),
+                    int(row['user_id']),
+                    activity_date,
+                    row['activity_type'],
+                    float(row['distance']) if row['distance'] else None,
+                    row['distance_units'],
+                    float(row['time']) if row['time'] else None,
+                    row['time_units'],
+                    float(row['speed']) if row['speed'] else None,
+                    row['speed_units'],
+                    int(row['calories_burned']) if row['calories_burned'] else None
+                ))
+                activities_loaded += 1
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return {
+            "success": True,
+            "message": f"Successfully loaded {activities_loaded} activities",
+            "activities_loaded": activities_loaded
+        }
+        
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="CSV file not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading data: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
