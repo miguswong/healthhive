@@ -59,6 +59,21 @@ def initialize_database():
             )
         """)
         
+        # Create biometrics table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS biometrics (
+                biometric_id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                date DATE NOT NULL,
+                weight DECIMAL(5,2),
+                avg_hr INTEGER,
+                high_hr INTEGER,
+                low_hr INTEGER,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
         # Commit the changes
         conn.commit()
         cursor.close()
@@ -67,7 +82,7 @@ def initialize_database():
         return {
             'success': True,
             'message': 'Database initialized successfully',
-            'tables_created': ['users', 'activities']
+            'tables_created': ['users', 'activities', 'biometrics']
         }
         
     except psycopg2.Error as e:

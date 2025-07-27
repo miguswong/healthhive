@@ -48,6 +48,16 @@ class Activity(BaseModel):
     calories_burned: Optional[int] = None
     activity_date: str
 
+class Biometrics(BaseModel):
+    biometric_id: Optional[int] = None
+    user_id: int
+    date: str
+    weight: Optional[float] = None
+    avg_hr: Optional[int] = None
+    high_hr: Optional[int] = None
+    low_hr: Optional[int] = None
+    notes: Optional[str] = None
+
 # Basic endpoints
 @app.get("/")
 async def root():
@@ -222,6 +232,118 @@ async def create_activity(activity: Activity):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+# Biometrics endpoints
+@app.get("/biometrics", response_model=List[Biometrics])
+async def get_biometrics(user_id: Optional[int] = None):
+    """Get all biometrics, optionally filtered by user"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if user_id:
+        cursor.execute("""
+            SELECT biometric_id, user_id, date, weight, avg_hr, high_hr, low_hr, notes 
+            FROM biometrics WHERE user_id = %s ORDER BY date DESC
+        """, (user_id,))
+    else:
+        cursor.execute("""
+            SELECT biometric_id, user_id, date, weight, avg_hr, high_hr, low_hr, notes 
+            FROM biometrics ORDER BY date DESC
+        """)
+    biometrics = []
+    for row in cursor.fetchall():
+        biometrics.append(Biometrics(
+            biometric_id=row[0],
+            user_id=row[1],
+            date=str(row[2]),
+            weight=float(row[3]) if row[3] is not None else None,
+            avg_hr=row[4],
+            high_hr=row[5],
+            low_hr=row[6],
+            notes=row[7]
+        ))
+    cursor.close()
+    conn.close()
+    return biometrics
+
+@app.get("/biometrics/{biometric_id}", response_model=Biometrics)
+async def get_biometric(biometric_id: int):
+    """Get a specific biometric entry"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT biometric_id, user_id, date, weight, avg_hr, high_hr, low_hr, notes 
+        FROM biometrics WHERE biometric_id = %s
+    """, (biometric_id,))
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if row:
+        return Biometrics(
+            biometric_id=row[0],
+            user_id=row[1],
+            date=str(row[2]),
+            weight=float(row[3]) if row[3] is not None else None,
+            avg_hr=row[4],
+            high_hr=row[5],
+            low_hr=row[6],
+            notes=row[7]
+        )
+    return {"error": "Biometric entry not found"}
+
+@app.post("/biometrics", response_model=Biometrics)
+async def create_biometric(biometric: Biometrics):
+    """Create or update a biometric entry in the database (one per user per day)"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Check if an entry already exists for this user and date
+        cursor.execute("""
+            SELECT biometric_id FROM biometrics 
+            WHERE user_id = %s AND date = %s
+        """, (biometric.user_id, biometric.date))
+        
+        existing_entry = cursor.fetchone()
+        
+        if existing_entry:
+            # Update existing entry
+            cursor.execute("""
+                UPDATE biometrics 
+                SET weight = %s, avg_hr = %s, high_hr = %s, low_hr = %s, notes = %s
+                WHERE user_id = %s AND date = %s
+                RETURNING biometric_id, user_id, date, weight, avg_hr, high_hr, low_hr, notes
+            """, (
+                biometric.weight, biometric.avg_hr, biometric.high_hr, biometric.low_hr, biometric.notes,
+                biometric.user_id, biometric.date
+            ))
+        else:
+            # Insert new entry
+            cursor.execute("""
+                INSERT INTO biometrics (user_id, date, weight, avg_hr, high_hr, low_hr, notes) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s) 
+                RETURNING biometric_id, user_id, date, weight, avg_hr, high_hr, low_hr, notes
+            """, (
+                biometric.user_id, biometric.date, biometric.weight, biometric.avg_hr,
+                biometric.high_hr, biometric.low_hr, biometric.notes
+            ))
+        
+        row = cursor.fetchone()
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return Biometrics(
+            biometric_id=row[0],
+            user_id=row[1],
+            date=str(row[2]),
+            weight=float(row[3]) if row[3] is not None else None,
+            avg_hr=row[4],
+            high_hr=row[5],
+            low_hr=row[6],
+            notes=row[7]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 # Simple Strava integration endpoint (placeholder)
 @app.get("/strava/connect")
 async def connect_strava():
@@ -288,6 +410,196 @@ async def load_activity_data():
         
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="CSV file not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading data: {str(e)}")
+
+@app.post("/load-biometric-data")
+async def load_biometric_data():
+    """Load biometric data from CSV file into the database"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Read CSV file
+        csv_file_path = "fakeData/biometricData.csv"
+        biometrics_loaded = 0
+        
+        with open(csv_file_path, 'r', encoding='utf-8') as file:
+            csv_reader = csv.DictReader(file)
+            
+            for row in csv_reader:
+                # Skip if biometric_id already exists
+                cursor.execute("SELECT biometric_id FROM biometrics WHERE biometric_id = %s", (int(row['biometric_id']),))
+                if cursor.fetchone():
+                    continue
+                
+                # Parse date
+                biometric_date = datetime.strptime(row['date'], '%m/%d/%Y').date()
+                
+                # Insert biometric using the user_id from CSV
+                cursor.execute("""
+                    INSERT INTO biometrics (
+                        biometric_id, user_id, date, weight, avg_hr, high_hr, low_hr, notes
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    int(row['biometric_id']),
+                    int(row['user_id']),
+                    biometric_date,
+                    float(row['weight']) if row['weight'] else None,
+                    int(row['avg_hr']) if row['avg_hr'] else None,
+                    int(row['high_hr']) if row['high_hr'] else None,
+                    int(row['low_hr']) if row['low_hr'] else None,
+                    row['notes']
+                ))
+                biometrics_loaded += 1
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return {
+            "success": True,
+            "message": f"Successfully loaded {biometrics_loaded} biometric entries",
+            "biometrics_loaded": biometrics_loaded
+        }
+        
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="CSV file not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading data: {str(e)}")
+
+@app.post("/load-all-data")
+async def load_all_data():
+    """Load all data from CSV files into the database (users, activities, biometrics)"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        results = {
+            "users_loaded": 0,
+            "activities_loaded": 0,
+            "biometrics_loaded": 0,
+            "errors": []
+        }
+        
+        # Load users first (since activities and biometrics reference user_id)
+        try:
+            csv_file_path = "fakeData/userData.csv"
+            with open(csv_file_path, 'r', encoding='utf-8') as file:
+                csv_reader = csv.DictReader(file)
+                
+                for row in csv_reader:
+                    # Skip if user already exists
+                    cursor.execute("SELECT id FROM users WHERE id = %s", (int(row['id']),))
+                    if cursor.fetchone():
+                        continue
+                    
+                    # Insert user
+                    cursor.execute("""
+                        INSERT INTO users (id, name, email) 
+                        VALUES (%s, %s, %s)
+                    """, (
+                        int(row['id']),
+                        row['name'],
+                        row['email']
+                    ))
+                    results["users_loaded"] += 1
+        except FileNotFoundError:
+            results["errors"].append("userData.csv not found")
+        except Exception as e:
+            results["errors"].append(f"Error loading users: {str(e)}")
+        
+        # Load activities
+        try:
+            csv_file_path = "fakeData/activityData.csv"
+            with open(csv_file_path, 'r', encoding='utf-8') as file:
+                csv_reader = csv.DictReader(file)
+                
+                for row in csv_reader:
+                    # Skip if activity_id already exists
+                    cursor.execute("SELECT activity_id FROM activities WHERE activity_id = %s", (int(row['activity_id']),))
+                    if cursor.fetchone():
+                        continue
+                    
+                    # Parse date
+                    activity_date = datetime.strptime(row['activity_date'], '%m/%d/%Y').date()
+                    
+                    # Insert activity
+                    cursor.execute("""
+                        INSERT INTO activities (
+                            activity_id, user_id, activity_date, activity_type, 
+                            distance, distance_units, time, time_units, 
+                            speed, speed_units, calories_burned
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (
+                        int(row['activity_id']),
+                        int(row['user_id']),
+                        activity_date,
+                        row['activity_type'],
+                        float(row['distance']) if row['distance'] else None,
+                        row['distance_units'],
+                        float(row['time']) if row['time'] else None,
+                        row['time_units'],
+                        float(row['speed']) if row['speed'] else None,
+                        row['speed_units'],
+                        int(row['calories_burned']) if row['calories_burned'] else None
+                    ))
+                    results["activities_loaded"] += 1
+        except FileNotFoundError:
+            results["errors"].append("activityData.csv not found")
+        except Exception as e:
+            results["errors"].append(f"Error loading activities: {str(e)}")
+        
+        # Load biometrics
+        try:
+            csv_file_path = "fakeData/biometricData.csv"
+            with open(csv_file_path, 'r', encoding='utf-8') as file:
+                csv_reader = csv.DictReader(file)
+                
+                for row in csv_reader:
+                    # Skip if biometric_id already exists
+                    cursor.execute("SELECT biometric_id FROM biometrics WHERE biometric_id = %s", (int(row['biometric_id']),))
+                    if cursor.fetchone():
+                        continue
+                    
+                    # Parse date
+                    biometric_date = datetime.strptime(row['date'], '%m/%d/%Y').date()
+                    
+                    # Insert biometric
+                    cursor.execute("""
+                        INSERT INTO biometrics (
+                            biometric_id, user_id, date, weight, avg_hr, high_hr, low_hr, notes
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (
+                        int(row['biometric_id']),
+                        int(row['user_id']),
+                        biometric_date,
+                        float(row['weight']) if row['weight'] else None,
+                        int(row['avg_hr']) if row['avg_hr'] else None,
+                        int(row['high_hr']) if row['high_hr'] else None,
+                        int(row['low_hr']) if row['low_hr'] else None,
+                        row['notes']
+                    ))
+                    results["biometrics_loaded"] += 1
+        except FileNotFoundError:
+            results["errors"].append("biometricData.csv not found")
+        except Exception as e:
+            results["errors"].append(f"Error loading biometrics: {str(e)}")
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        # Determine success status
+        total_loaded = results["users_loaded"] + results["activities_loaded"] + results["biometrics_loaded"]
+        success = len(results["errors"]) == 0
+        
+        return {
+            "success": success,
+            "message": f"Loaded {total_loaded} total records",
+            "details": results
+        }
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error loading data: {str(e)}")
 
