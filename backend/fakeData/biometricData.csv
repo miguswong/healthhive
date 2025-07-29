@@ -1,17 +1,17 @@
-biometric_id,user_id,date,weight,avg_hr,high_hr,low_hr,notes
-1,1,1/1/2025,150.2,65,78,52,Good start to the year
-2,1,1/3/2025,149.8,67,82,54,Feeling energized after run
-3,1,1/5/2025,149.5,66,80,53,Weight trending down
-4,1,1/6/2025,149.3,68,85,55,Longer run today
-5,1,1/8/2025,149.1,66,79,52,Consistent progress
-6,1,1/10/2025,148.9,67,83,54,Feeling strong
-7,1,1/12/2025,148.7,65,77,51,Good recovery
-8,1,1/13/2025,148.5,69,86,56,Long run day
-9,1,1/15/2025,148.3,66,80,53,Steady improvement
-10,1,1/17/2025,148.1,67,84,55,Maintaining momentum
-11,1,1/19/2025,147.9,66,81,54,Feeling lighter
-12,1,1/20/2025,147.7,68,87,57,Longest run yet
-13,1,1/22/2025,147.5,66,79,52,Good pace
-14,1,1/24/2025,147.3,67,82,54,Consistent weight loss
-15,1,1/26/2025,147.1,66,80,53,Feeling great
-16,1,1/27/2025,146.9,69,88,58,Another long run 
+biometric_id,user_id,date,weight,weight_units,avg_hr,high_hr,low_hr,notes
+1,1,1/1/2025,150.2,lbs,65,78,52,Good start to the year
+2,1,1/3/2025,149.8,lbs,67,82,54,Feeling energized after run
+3,1,1/5/2025,149.5,lbs,66,80,53,Weight trending down
+4,1,1/6/2025,149.3,lbs,68,85,55,Longer run today
+5,1,1/8/2025,149.1,lbs,66,79,52,Consistent progress
+6,1,1/10/2025,148.9,lbs,67,83,54,Feeling strong
+7,1,1/12/2025,148.7,lbs,65,77,51,Good recovery
+8,1,1/13/2025,148.5,lbs,69,86,56,Long run day
+9,1,1/15/2025,148.3,lbs,66,80,53,Steady improvement
+10,1,1/17/2025,148.1,lbs,67,84,55,Maintaining momentum
+11,1,1/19/2025,147.9,lbs,66,81,54,Feeling lighter
+12,1,1/20/2025,147.7,lbs,68,87,57,Longest run yet
+13,1,1/22/2025,147.5,lbs,66,79,52,Good pace
+14,1,1/24/2025,147.3,lbs,67,82,54,Consistent weight loss
+15,1,1/26/2025,147.1,lbs,66,80,53,Feeling great
+16,1,1/27/2025,146.9,lbs,69,88,58,Another long run 

@@ -66,10 +66,21 @@ def initialize_database():
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                 date DATE NOT NULL,
                 weight DECIMAL(5,2),
+                weight_units VARCHAR(10),
                 avg_hr INTEGER,
                 high_hr INTEGER,
                 low_hr INTEGER,
                 notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Create exercise_definitions table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS exercise_definitions (
+                exercise_id SERIAL PRIMARY KEY,
+                exercise_name VARCHAR(100) NOT NULL,
+                avg_met_value DECIMAL(4,2) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -82,7 +93,7 @@ def initialize_database():
         return {
             'success': True,
             'message': 'Database initialized successfully',
-            'tables_created': ['users', 'activities', 'biometrics']
+            'tables_created': ['users', 'activities', 'biometrics', 'exercise_definitions']
         }
         
     except psycopg2.Error as e:

@@ -53,10 +53,16 @@ class Biometrics(BaseModel):
     user_id: int
     date: str
     weight: Optional[float] = None
+    weight_units: Optional[str] = None
     avg_hr: Optional[int] = None
     high_hr: Optional[int] = None
     low_hr: Optional[int] = None
     notes: Optional[str] = None
+
+class ExerciseDefinition(BaseModel):
+    exercise_id: Optional[int] = None
+    exercise_name: str
+    avg_met_value: float
 
 # Basic endpoints
 @app.get("/")
@@ -197,8 +203,32 @@ async def get_activity(activity_id: int):
 
 @app.post("/activities", response_model=Activity)
 async def create_activity(activity: Activity):
-    """Create a new activity in the database"""
+    """Create a new activity in the database with automatic calorie calculation"""
     try:
+        # Calculate calories burned automatically
+        calculated_calories = None
+        if activity.time and activity.activity_type:
+            # Get user's weight in kg
+            weight_kg = get_user_weight_kg(activity.user_id, activity.activity_date)
+            
+            # Convert time to hours
+            time_hours = 0.0
+            if activity.time_units:
+                if activity.time_units.lower() in ['minutes', 'min']:
+                    time_hours = activity.time / 60.0
+                elif activity.time_units.lower() in ['hours', 'hr']:
+                    time_hours = activity.time
+                elif activity.time_units.lower() in ['seconds', 'sec']:
+                    time_hours = activity.time / 3600.0
+                else:
+                    time_hours = activity.time / 60.0  # Default to minutes
+            
+            # Calculate calories burned
+            calculated_calories = calculate_calories_burned(activity.activity_type, weight_kg, time_hours)
+        
+        # Use calculated calories if available, otherwise use provided calories
+        final_calories = calculated_calories if calculated_calories is not None else activity.calories_burned
+        
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
@@ -210,7 +240,7 @@ async def create_activity(activity: Activity):
         """, (
             activity.user_id, activity.activity_type, activity.distance, activity.distance_units,
             activity.time, activity.time_units, activity.speed, activity.speed_units, 
-            activity.calories_burned, activity.activity_date
+            final_calories, activity.activity_date
         ))
         row = cursor.fetchone()
         conn.commit()
@@ -240,12 +270,12 @@ async def get_biometrics(user_id: Optional[int] = None):
     cursor = conn.cursor()
     if user_id:
         cursor.execute("""
-            SELECT biometric_id, user_id, date, weight, avg_hr, high_hr, low_hr, notes 
+            SELECT biometric_id, user_id, date, weight, weight_units, avg_hr, high_hr, low_hr, notes 
             FROM biometrics WHERE user_id = %s ORDER BY date DESC
         """, (user_id,))
     else:
         cursor.execute("""
-            SELECT biometric_id, user_id, date, weight, avg_hr, high_hr, low_hr, notes 
+            SELECT biometric_id, user_id, date, weight, weight_units, avg_hr, high_hr, low_hr, notes 
             FROM biometrics ORDER BY date DESC
         """)
     biometrics = []
@@ -255,10 +285,11 @@ async def get_biometrics(user_id: Optional[int] = None):
             user_id=row[1],
             date=str(row[2]),
             weight=float(row[3]) if row[3] is not None else None,
-            avg_hr=row[4],
-            high_hr=row[5],
-            low_hr=row[6],
-            notes=row[7]
+            weight_units=row[4],
+            avg_hr=row[5],
+            high_hr=row[6],
+            low_hr=row[7],
+            notes=row[8]
         ))
     cursor.close()
     conn.close()
@@ -270,7 +301,7 @@ async def get_biometric(biometric_id: int):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT biometric_id, user_id, date, weight, avg_hr, high_hr, low_hr, notes 
+        SELECT biometric_id, user_id, date, weight, weight_units, avg_hr, high_hr, low_hr, notes 
         FROM biometrics WHERE biometric_id = %s
     """, (biometric_id,))
     row = cursor.fetchone()
@@ -282,10 +313,11 @@ async def get_biometric(biometric_id: int):
             user_id=row[1],
             date=str(row[2]),
             weight=float(row[3]) if row[3] is not None else None,
-            avg_hr=row[4],
-            high_hr=row[5],
-            low_hr=row[6],
-            notes=row[7]
+            weight_units=row[4],
+            avg_hr=row[5],
+            high_hr=row[6],
+            low_hr=row[7],
+            notes=row[8]
         )
     return {"error": "Biometric entry not found"}
 
@@ -308,21 +340,21 @@ async def create_biometric(biometric: Biometrics):
             # Update existing entry
             cursor.execute("""
                 UPDATE biometrics 
-                SET weight = %s, avg_hr = %s, high_hr = %s, low_hr = %s, notes = %s
+                SET weight = %s, weight_units = %s, avg_hr = %s, high_hr = %s, low_hr = %s, notes = %s
                 WHERE user_id = %s AND date = %s
-                RETURNING biometric_id, user_id, date, weight, avg_hr, high_hr, low_hr, notes
+                RETURNING biometric_id, user_id, date, weight, weight_units, avg_hr, high_hr, low_hr, notes
             """, (
-                biometric.weight, biometric.avg_hr, biometric.high_hr, biometric.low_hr, biometric.notes,
+                biometric.weight, biometric.weight_units, biometric.avg_hr, biometric.high_hr, biometric.low_hr, biometric.notes,
                 biometric.user_id, biometric.date
             ))
         else:
             # Insert new entry
             cursor.execute("""
-                INSERT INTO biometrics (user_id, date, weight, avg_hr, high_hr, low_hr, notes) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s) 
-                RETURNING biometric_id, user_id, date, weight, avg_hr, high_hr, low_hr, notes
+                INSERT INTO biometrics (user_id, date, weight, weight_units, avg_hr, high_hr, low_hr, notes) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s) 
+                RETURNING biometric_id, user_id, date, weight, weight_units, avg_hr, high_hr, low_hr, notes
             """, (
-                biometric.user_id, biometric.date, biometric.weight, biometric.avg_hr,
+                biometric.user_id, biometric.date, biometric.weight, biometric.weight_units, biometric.avg_hr,
                 biometric.high_hr, biometric.low_hr, biometric.notes
             ))
         
@@ -336,10 +368,145 @@ async def create_biometric(biometric: Biometrics):
             user_id=row[1],
             date=str(row[2]),
             weight=float(row[3]) if row[3] is not None else None,
-            avg_hr=row[4],
-            high_hr=row[5],
-            low_hr=row[6],
-            notes=row[7]
+            weight_units=row[4],
+            avg_hr=row[5],
+            high_hr=row[6],
+            low_hr=row[7],
+            notes=row[8]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+def calculate_calories_burned(activity_type: str, weight_kg: float, time_hours: float) -> int:
+    """Calculate calories burned using MET values and user weight"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Get MET value for the activity type
+        cursor.execute("""
+            SELECT avg_met_value FROM exercise_definitions 
+            WHERE LOWER(exercise_name) = LOWER(%s)
+        """, (activity_type,))
+        
+        met_row = cursor.fetchone()
+        if met_row:
+            met_value = float(met_row[0])
+        else:
+            # Default to Miscellaneous if no match found
+            cursor.execute("SELECT avg_met_value FROM exercise_definitions WHERE exercise_name = 'Miscellaneous'")
+            met_row = cursor.fetchone()
+            met_value = float(met_row[0]) if met_row else 2.0
+        
+        cursor.close()
+        conn.close()
+        
+        # Calculate calories: MET × weight (kg) × time (hours)
+        calories = int(met_value * weight_kg * time_hours)
+        return calories
+        
+    except Exception as e:
+        # Fallback calculation if database lookup fails
+        return int(2.0 * weight_kg * time_hours)  # Default MET of 2.0
+
+def get_user_weight_kg(user_id: int, activity_date: str) -> float:
+    """Get user's weight in kg for a given date"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Get the most recent weight entry for the user on or before the activity date
+        cursor.execute("""
+            SELECT weight, weight_units FROM biometrics 
+            WHERE user_id = %s AND date <= %s 
+            ORDER BY date DESC 
+            LIMIT 1
+        """, (user_id, activity_date))
+        
+        weight_row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        if weight_row and weight_row[0]:
+            weight = float(weight_row[0])
+            weight_units = weight_row[1] if weight_row[1] else 'lbs'
+            
+            # Convert to kg if needed
+            if weight_units.lower() in ['lbs', 'lb', 'pounds']:
+                return weight * 0.453592  # Convert lbs to kg
+            elif weight_units.lower() in ['kg', 'kilograms']:
+                return weight
+            else:
+                return weight  # Assume kg if units unknown
+        
+        return 70.0  # Default weight in kg if no data found
+        
+    except Exception as e:
+        return 70.0  # Default weight in kg if error occurs
+
+# Exercise Definitions endpoints
+@app.get("/exercise-definitions", response_model=List[ExerciseDefinition])
+async def get_exercise_definitions():
+    """Get all exercise definitions"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT exercise_id, exercise_name, avg_met_value 
+        FROM exercise_definitions ORDER BY exercise_id
+    """)
+    exercise_definitions = []
+    for row in cursor.fetchall():
+        exercise_definitions.append(ExerciseDefinition(
+            exercise_id=row[0],
+            exercise_name=row[1],
+            avg_met_value=float(row[2])
+        ))
+    cursor.close()
+    conn.close()
+    return exercise_definitions
+
+@app.get("/exercise-definitions/{exercise_id}", response_model=ExerciseDefinition)
+async def get_exercise_definition(exercise_id: int):
+    """Get a specific exercise definition"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT exercise_id, exercise_name, avg_met_value 
+        FROM exercise_definitions WHERE exercise_id = %s
+    """, (exercise_id,))
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if row:
+        return ExerciseDefinition(
+            exercise_id=row[0],
+            exercise_name=row[1],
+            avg_met_value=float(row[2])
+        )
+    return {"error": "Exercise definition not found"}
+
+@app.post("/exercise-definitions", response_model=ExerciseDefinition)
+async def create_exercise_definition(exercise_definition: ExerciseDefinition):
+    """Create a new exercise definition in the database"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO exercise_definitions (exercise_name, avg_met_value) 
+            VALUES (%s, %s) 
+            RETURNING exercise_id, exercise_name, avg_met_value
+        """, (
+            exercise_definition.exercise_name,
+            exercise_definition.avg_met_value
+        ))
+        row = cursor.fetchone()
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return ExerciseDefinition(
+            exercise_id=row[0],
+            exercise_name=row[1],
+            avg_met_value=float(row[2])
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -355,7 +522,7 @@ async def connect_strava():
 
 @app.post("/load-activity-data")
 async def load_activity_data():
-    """Load activity data from CSV file into the database"""
+    """Load sample activity data from CSV file into the database. This endpoint loads sample/demo fitness activity data for testing and development purposes."""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -404,8 +571,56 @@ async def load_activity_data():
         
         return {
             "success": True,
-            "message": f"Successfully loaded {activities_loaded} activities",
-            "activities_loaded": activities_loaded
+            "message": f"Successfully loaded {activities_loaded} sample activities",
+            "activities_loaded": activities_loaded,
+            "note": "This is sample/demo data for testing purposes"
+        }
+        
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="CSV file not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading data: {str(e)}")
+
+@app.post("/load-user-data")
+async def load_user_data():
+    """Load sample user data from CSV file into the database. This endpoint loads sample/demo user data for testing and development purposes."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Read CSV file
+        csv_file_path = "fakeData/userData.csv"
+        users_loaded = 0
+        
+        with open(csv_file_path, 'r', encoding='utf-8') as file:
+            csv_reader = csv.DictReader(file)
+            
+            for row in csv_reader:
+                # Skip if user already exists
+                cursor.execute("SELECT id FROM users WHERE id = %s", (int(row['id']),))
+                if cursor.fetchone():
+                    continue
+                
+                # Insert user
+                cursor.execute("""
+                    INSERT INTO users (id, name, email) 
+                    VALUES (%s, %s, %s)
+                """, (
+                    int(row['id']),
+                    row['name'],
+                    row['email']
+                ))
+                users_loaded += 1
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return {
+            "success": True,
+            "message": f"Successfully loaded {users_loaded} sample users",
+            "users_loaded": users_loaded,
+            "note": "This is sample/demo data for testing purposes"
         }
         
     except FileNotFoundError:
@@ -415,7 +630,7 @@ async def load_activity_data():
 
 @app.post("/load-biometric-data")
 async def load_biometric_data():
-    """Load biometric data from CSV file into the database"""
+    """Load sample biometric data from CSV file into the database. This endpoint loads sample/demo health metrics data for testing and development purposes."""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -459,8 +674,9 @@ async def load_biometric_data():
         
         return {
             "success": True,
-            "message": f"Successfully loaded {biometrics_loaded} biometric entries",
-            "biometrics_loaded": biometrics_loaded
+            "message": f"Successfully loaded {biometrics_loaded} sample biometric entries",
+            "biometrics_loaded": biometrics_loaded,
+            "note": "This is sample/demo data for testing purposes"
         }
         
     except FileNotFoundError:
@@ -470,7 +686,7 @@ async def load_biometric_data():
 
 @app.post("/load-all-data")
 async def load_all_data():
-    """Load all data from CSV files into the database (users, activities, biometrics)"""
+    """Load all sample data from CSV files into the database (users, activities, biometrics). This endpoint loads sample/demo data for testing and development purposes."""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -568,13 +784,14 @@ async def load_all_data():
                     # Insert biometric
                     cursor.execute("""
                         INSERT INTO biometrics (
-                            biometric_id, user_id, date, weight, avg_hr, high_hr, low_hr, notes
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                            biometric_id, user_id, date, weight, weight_units, avg_hr, high_hr, low_hr, notes
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """, (
                         int(row['biometric_id']),
                         int(row['user_id']),
                         biometric_date,
                         float(row['weight']) if row['weight'] else None,
+                        row['weight_units'],
                         int(row['avg_hr']) if row['avg_hr'] else None,
                         int(row['high_hr']) if row['high_hr'] else None,
                         int(row['low_hr']) if row['low_hr'] else None,
@@ -596,10 +813,59 @@ async def load_all_data():
         
         return {
             "success": success,
-            "message": f"Loaded {total_loaded} total records",
-            "details": results
+            "message": f"Loaded {total_loaded} total sample records",
+            "details": results,
+            "note": "This is sample/demo data for testing purposes"
         }
         
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading data: {str(e)}")
+
+@app.post("/load-exercise-definitions")
+async def load_exercise_definitions():
+    """Load exercise definitions from CSV file into the database. This endpoint loads exercise types and their MET values for calorie calculations."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Read CSV file
+        csv_file_path = "fakeData/exerciseDefinitions.csv"
+        definitions_loaded = 0
+        
+        with open(csv_file_path, 'r', encoding='utf-8') as file:
+            csv_reader = csv.DictReader(file)
+            
+            for row in csv_reader:
+                # Skip if exercise_id already exists
+                cursor.execute("SELECT exercise_id FROM exercise_definitions WHERE exercise_id = %s", (int(row['exercise_id']),))
+                if cursor.fetchone():
+                    continue
+                
+                # Insert exercise definition
+                cursor.execute("""
+                    INSERT INTO exercise_definitions (
+                        exercise_id, exercise_name, avg_met_value
+                    ) VALUES (%s, %s, %s)
+                """, (
+                    int(row['exercise_id']),
+                    row['exercise_name'],
+                    float(row['avg_met_value'])
+                ))
+                definitions_loaded += 1
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return {
+            "success": True,
+            "message": f"Successfully loaded {definitions_loaded} exercise definitions",
+            "definitions_loaded": definitions_loaded,
+            "note": "Exercise definitions loaded for calorie calculations"
+        }
+        
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="CSV file not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error loading data: {str(e)}")
 
