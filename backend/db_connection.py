@@ -37,6 +37,7 @@ def initialize_database():
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
                 email VARCHAR(255) UNIQUE NOT NULL,
+                weight_goal VARCHAR(20),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -85,6 +86,27 @@ def initialize_database():
             )
         """)
         
+        # Create recipes table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS recipes (
+                recipe_id SERIAL PRIMARY KEY,
+                recipe_name VARCHAR(255) NOT NULL,
+                recipe_type VARCHAR(50),
+                recipe_source VARCHAR(100),
+                source_user_id INTEGER,
+                recipe_url TEXT,
+                ingredients TEXT,
+                instructions TEXT,
+                directions TEXT,
+                calories INTEGER,
+                fat DECIMAL(5,2),
+                carbs DECIMAL(5,2),
+                protein DECIMAL(5,2),
+                extra_categories VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
         # Commit the changes
         conn.commit()
         cursor.close()
@@ -93,7 +115,7 @@ def initialize_database():
         return {
             'success': True,
             'message': 'Database initialized successfully',
-            'tables_created': ['users', 'activities', 'biometrics', 'exercise_definitions']
+            'tables_created': ['users', 'activities', 'biometrics', 'exercise_definitions', 'recipes']
         }
         
     except psycopg2.Error as e:
