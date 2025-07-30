@@ -44,7 +44,7 @@ def generate_recipe_with_gpt(user_directions: str, model: str = "gpt-3.5-turbo")
         "Given user directions, output a recipe as a JSON object with the following fields: "
         "recipe_name, recipe_type (Omnivore, Vegan, Keto, Paleo, or Vegetarian), "
         "ingredients (as a bulleted list), instructions (as a numbered list), "
-        "calories (per serving), fat (per serving), carbs (per serving), "
+        "calories (per serving), fat (per serving in grams without including units), carbs (per serving in grams without including units), protein (per serving in grams without including units), "
         "and extra_categories (any other useful tags). "
         "Respond ONLY with the JSON object."
         "If you cannot generate a recipe, return an empty JSON object."
@@ -71,6 +71,63 @@ def generate_recipe_with_gpt(user_directions: str, model: str = "gpt-3.5-turbo")
     except json.JSONDecodeError as e:
         raise Exception(f"Failed to parse GPT response as JSON: {str(e)}")
 
+def parse_numeric_value(value) -> float:
+    """
+    Parse numeric values that might contain units (e.g., "10g", "250 calories")
+    Returns just the numeric part as a float.
+    """
+    if value is None:
+        return 0.0
+    
+    # Convert to string if not already
+    value_str = str(value).strip()
+    
+    if not value_str:
+        return 0.0
+    
+    # Remove common units and extra text
+    import re
+    # Extract just the numeric part (including decimals)
+    numeric_match = re.search(r'(\d+\.?\d*)', value_str)
+    
+    if numeric_match:
+        return float(numeric_match.group(1))
+    else:
+        return 0.0
+
+def clean_json_formatting(value, use_newlines=True) -> str:
+    """
+    Clean JSON-style formatting from strings.
+    Removes surrounding braces and quotes, converts to clean format.
+    
+    Args:
+        value: The value to clean
+        use_newlines: If True, join with newlines; if False, join with commas
+    """
+    if not value:
+        return ""
+    
+    value_str = str(value).strip()
+    
+    # Remove surrounding braces if present
+    if value_str.startswith('{') and value_str.endswith('}'):
+        value_str = value_str[1:-1].strip()
+    
+    # Remove quotes around individual items and clean up
+    import re
+    # Split by comma and clean each item
+    items = [item.strip().strip('"\'') for item in value_str.split(',')]
+    
+    # Filter out empty items
+    items = [item for item in items if item]
+    
+    if not items:
+        return ""
+    
+    # Join with newlines for ingredients/instructions, commas for categories
+    separator = '\n' if use_newlines else ', '
+    return separator.join(items)
+
 def save_recipe_to_database(recipe_data: Dict, user_id: int) -> Dict:
     """
     Save the generated recipe to the database.
@@ -83,15 +140,19 @@ def save_recipe_to_database(recipe_data: Dict, user_id: int) -> Dict:
         # Extract data from recipe_data, with fallbacks for missing fields
         recipe_name = recipe_data.get('recipe_name', 'Generated Recipe')
         recipe_type = recipe_data.get('recipe_type', 'Omnivore')
-        ingredients = recipe_data.get('ingredients', '')
-        instructions = recipe_data.get('instructions', '')
-        calories = recipe_data.get('calories', 0)
-        fat = recipe_data.get('fat', 0.0)
-        carbs = recipe_data.get('carbs', 0.0)
-        protein = recipe_data.get('protein', 0.0)  # GPT might not provide this
-        extra_categories = recipe_data.get('extra_categories', '')
         
-        # Insert the recipe
+        # Clean JSON formatting from text fields
+        ingredients = clean_json_formatting(recipe_data.get('ingredients', ''), use_newlines=True)
+        instructions = clean_json_formatting(recipe_data.get('instructions', ''), use_newlines=True)
+        extra_categories = clean_json_formatting(recipe_data.get('extra_categories', ''), use_newlines=False)
+        
+        # Parse nutritional values to remove units and convert to numbers
+        calories = int(parse_numeric_value(recipe_data.get('calories', 0)))
+        fat = parse_numeric_value(recipe_data.get('fat', 0.0))
+        carbs = parse_numeric_value(recipe_data.get('carbs', 0.0))
+        protein = parse_numeric_value(recipe_data.get('protein', 0.0))
+        
+        # Insert the recipe (let database auto-generate recipe_id)
         cursor.execute("""
             INSERT INTO recipes (
                 recipe_name, recipe_type, recipe_source, source_user_id,

@@ -95,8 +95,29 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy"}
+    """Health check endpoint for Docker and load balancers"""
+    try:
+        # Test database connection
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        cursor.close()
+        conn.close()
+        
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy", 
+            "database": "disconnected",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+
 
 @app.get("/test-connection")
 async def test_connection():
@@ -798,23 +819,17 @@ async def load_activity_data():
             csv_reader = csv.DictReader(file)
             
             for row in csv_reader:
-                # Skip if activity_id already exists
-                cursor.execute("SELECT activity_id FROM activities WHERE activity_id = %s", (int(row['activity_id']),))
-                if cursor.fetchone():
-                    continue
-                
                 # Parse date
                 activity_date = datetime.strptime(row['activity_date'], '%m/%d/%Y').date()
                 
-                # Insert activity using the user_id from CSV
+                # Insert activity using the user_id from CSV (let database auto-generate activity_id)
                 cursor.execute("""
                     INSERT INTO activities (
-                        activity_id, user_id, activity_date, activity_type, 
+                        user_id, activity_date, activity_type, 
                         distance, distance_units, time, time_units, 
                         speed, speed_units, calories_burned
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
-                    int(row['activity_id']),
                     int(row['user_id']),
                     activity_date,
                     row['activity_type'],
@@ -906,24 +921,19 @@ async def load_biometric_data():
             csv_reader = csv.DictReader(file)
             
             for row in csv_reader:
-                # Skip if biometric_id already exists
-                cursor.execute("SELECT biometric_id FROM biometrics WHERE biometric_id = %s", (int(row['biometric_id']),))
-                if cursor.fetchone():
-                    continue
-                
                 # Parse date
                 biometric_date = datetime.strptime(row['date'], '%m/%d/%Y').date()
                 
-                # Insert biometric using the user_id from CSV
+                # Insert biometric using the user_id from CSV (let database auto-generate biometric_id)
                 cursor.execute("""
                     INSERT INTO biometrics (
-                        biometric_id, user_id, date, weight, avg_hr, high_hr, low_hr, notes
+                        user_id, date, weight, weight_units, avg_hr, high_hr, low_hr, notes
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
-                    int(row['biometric_id']),
                     int(row['user_id']),
                     biometric_date,
                     float(row['weight']) if row['weight'] else None,
+                    row['weight_units'],
                     int(row['avg_hr']) if row['avg_hr'] else None,
                     int(row['high_hr']) if row['high_hr'] else None,
                     int(row['low_hr']) if row['low_hr'] else None,
@@ -970,17 +980,11 @@ async def load_test_data():
                 csv_reader = csv.DictReader(file)
                 
                 for row in csv_reader:
-                    # Skip if user already exists
-                    cursor.execute("SELECT id FROM users WHERE id = %s", (int(row['id']),))
-                    if cursor.fetchone():
-                        continue
-                    
-                    # Insert user
+                    # Insert user (let database auto-generate id)
                     cursor.execute("""
-                        INSERT INTO users (id, name, email, weight_goal) 
-                        VALUES (%s, %s, %s, %s)
+                        INSERT INTO users (name, email, weight_goal) 
+                        VALUES (%s, %s, %s)
                     """, (
-                        int(row['id']),
                         row['name'],
                         row['email'],
                         row['weight_goal'] if 'weight_goal' in row and row['weight_goal'] else None
@@ -998,23 +1002,17 @@ async def load_test_data():
                 csv_reader = csv.DictReader(file)
                 
                 for row in csv_reader:
-                    # Skip if activity_id already exists
-                    cursor.execute("SELECT activity_id FROM activities WHERE activity_id = %s", (int(row['activity_id']),))
-                    if cursor.fetchone():
-                        continue
-                    
                     # Parse date
                     activity_date = datetime.strptime(row['activity_date'], '%m/%d/%Y').date()
                     
-                    # Insert activity
+                    # Insert activity (let database auto-generate activity_id)
                     cursor.execute("""
                         INSERT INTO activities (
-                            activity_id, user_id, activity_date, activity_type, 
+                            user_id, activity_date, activity_type, 
                             distance, distance_units, time, time_units, 
                             speed, speed_units, calories_burned
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """, (
-                        int(row['activity_id']),
                         int(row['user_id']),
                         activity_date,
                         row['activity_type'],
@@ -1039,21 +1037,15 @@ async def load_test_data():
                 csv_reader = csv.DictReader(file)
                 
                 for row in csv_reader:
-                    # Skip if biometric_id already exists
-                    cursor.execute("SELECT biometric_id FROM biometrics WHERE biometric_id = %s", (int(row['biometric_id']),))
-                    if cursor.fetchone():
-                        continue
-                    
                     # Parse date
                     biometric_date = datetime.strptime(row['date'], '%m/%d/%Y').date()
                     
-                    # Insert biometric
+                    # Insert biometric (let database auto-generate biometric_id)
                     cursor.execute("""
                         INSERT INTO biometrics (
-                            biometric_id, user_id, date, weight, weight_units, avg_hr, high_hr, low_hr, notes
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            user_id, date, weight, weight_units, avg_hr, high_hr, low_hr, notes
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     """, (
-                        int(row['biometric_id']),
                         int(row['user_id']),
                         biometric_date,
                         float(row['weight']) if row['weight'] else None,
@@ -1076,18 +1068,12 @@ async def load_test_data():
                 csv_reader = csv.DictReader(file)
                 
                 for row in csv_reader:
-                    # Skip if exercise_id already exists
-                    cursor.execute("SELECT exercise_id FROM exercise_definitions WHERE exercise_id = %s", (int(row['exercise_id']),))
-                    if cursor.fetchone():
-                        continue
-                    
-                    # Insert exercise definition
+                    # Insert exercise definition (let database auto-generate exercise_id)
                     cursor.execute("""
                         INSERT INTO exercise_definitions (
-                            exercise_id, exercise_name, avg_met_value
-                        ) VALUES (%s, %s, %s)
+                            exercise_name, avg_met_value
+                        ) VALUES (%s, %s)
                     """, (
-                        int(row['exercise_id']),
                         row['exercise_name'],
                         float(row['avg_met_value'])
                     ))
@@ -1104,20 +1090,14 @@ async def load_test_data():
                 csv_reader = csv.DictReader(file)
                 
                 for row in csv_reader:
-                    # Skip if recipe_id already exists
-                    cursor.execute("SELECT recipe_id FROM recipes WHERE recipe_id = %s", (int(row['recipe_id']),))
-                    if cursor.fetchone():
-                        continue
-                    
-                    # Insert recipe
+                    # Insert recipe (let database auto-generate recipe_id)
                     cursor.execute("""
                         INSERT INTO recipes (
-                            recipe_id, recipe_name, recipe_type, recipe_source, source_user_id,
+                            recipe_name, recipe_type, recipe_source, source_user_id,
                             recipe_url, ingredients, instructions, directions, calories,
                             fat, carbs, protein, extra_categories
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """, (
-                        int(row['recipe_id']),
                         row['recipe_name'],
                         row['recipe_type'] if row['recipe_type'] else None,
                         row['recipe_source'] if row['recipe_source'] else None,
@@ -1171,18 +1151,12 @@ async def load_exercise_definitions():
             csv_reader = csv.DictReader(file)
             
             for row in csv_reader:
-                # Skip if exercise_id already exists
-                cursor.execute("SELECT exercise_id FROM exercise_definitions WHERE exercise_id = %s", (int(row['exercise_id']),))
-                if cursor.fetchone():
-                    continue
-                
-                # Insert exercise definition
+                # Insert exercise definition (let database auto-generate exercise_id)
                 cursor.execute("""
                     INSERT INTO exercise_definitions (
-                        exercise_id, exercise_name, avg_met_value
-                    ) VALUES (%s, %s, %s)
+                        exercise_name, avg_met_value
+                    ) VALUES (%s, %s)
                 """, (
-                    int(row['exercise_id']),
                     row['exercise_name'],
                     float(row['avg_met_value'])
                 ))
@@ -1219,20 +1193,14 @@ async def load_recipe_data():
             csv_reader = csv.DictReader(file)
             
             for row in csv_reader:
-                # Skip if recipe_id already exists
-                cursor.execute("SELECT recipe_id FROM recipes WHERE recipe_id = %s", (int(row['recipe_id']),))
-                if cursor.fetchone():
-                    continue
-                
-                # Insert recipe
+                # Insert recipe (let database auto-generate recipe_id)
                 cursor.execute("""
                     INSERT INTO recipes (
-                        recipe_id, recipe_name, recipe_type, recipe_source, source_user_id,
+                        recipe_name, recipe_type, recipe_source, source_user_id,
                         recipe_url, ingredients, instructions, directions, calories,
                         fat, carbs, protein, extra_categories
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
-                    int(row['recipe_id']),
                     row['recipe_name'],
                     row['recipe_type'] if row['recipe_type'] else None,
                     row['recipe_source'] if row['recipe_source'] else None,

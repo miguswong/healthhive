@@ -1,123 +1,123 @@
-recipe_id,recipe_name,recipe_type,recipe_source,source_user_id,recipe_url,ingredients,instructions,ingredients,directions,calories,fat,carbs,protein,extra_categories
-1,10-min Breakfast: Chinese Tomato Eggs,Omnivore,Internet,,https://nutritionbykylie.substack.com/p/10-min-breakfast-chinese-tomato-eggs,,,,,240,14,14,12,Breakfast
-2,15-Minute Shrimp Tacos with Spicy Chipotle Slaw,Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/15-minute-shrimp-tacos-with-spicy-chipotle-slaw-3676441,,,,,560,29,35,35,Tacos
-3,Actually Good Quinoa Salad,Vegan,Internet,,https://rainbowplantlife.com/quinoa-salad/,,,,,470,27,39,15,Salad
-4,Aloo Gobi,Vegan,Internet,,https://rainbowplantlife.com/aloo-gobi/,,,,,240,14,27,4,Cauliflower
-5,Avocado Frittata with Cotija and Mozzarella Cheese,Keto,Internet,,https://kalynskitchen.com/avocado-frittata-with-cotija-mozzarella/,,,,,190,15,4,10,Breakfast
-6,Bacon Cheeseburger Casserole,Keto,Internet,,https://www.lowcarbyum.com/bacon-cheeseburger-casserole/,,,,,577,49,5,28,Burger
-7,Balsamic Chicken Salad,Omnivore,Internet,,https://damndelicious.net/2025/05/30/balsamic-chicken-salad/,,,,,570,42,14,38,Salad
-8,Best Vegan Pizza,Vegan,Internet,,https://www.loveandlemons.com/vegan-pizza/,,,,,290,11,39,6,Pizza
-9,Best Veggie Burger,Vegan,Internet,,https://www.loveandlemons.com/best-veggie-burger-recipe/,,,,,370,21,36,9,Burger
-10,Black Bean Burger (no cheese/avocado),Vegetarian,Internet,,https://www.twopeasandtheirpod.com/black-bean-burger/,,,,,310,8,43,13,Burger
-11,BLT Pasta Salad,Paleo,Internet,,https://www.bigy.com/rs/recipes/blt-pasta-salad/9052,,,,,277,15,28,9,Salad
-12,Braised Tofu,Vegan,Internet,,https://rainbowplantlife.com/braised-tofu/,,,,,370,18,33,17,Tofu
-13,Broccoli Feta Fritatta,Vegetarian,Internet,,https://www.loveandlemons.com/frittata-recipe/,,,,,210,15,5,15,Breakfast
-14,"Brussels Sprouts Salad with Dates, Parmesan Cheese, Pistachios & Creamy Lemon Dressing",Vegetarian,Internet,,https://www.twopeasandtheirpod.com/brussels-sprouts-salad-with-dates-parmesan-cheese-pistachios/,,,,,240,14,20,10,Salad
-15,Butternut Squash Orzo,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/butternut-squash-orzo/,,,,,440,25,45,10,Chicken
-16,Cajun Gumbo With Chicken and Andouille Sausage Recipe,Omnivore,Internet,,https://www.seriouseats.com/cajun-gumbo-with-chicken-and-andouille-recipe,,,,,580,40,20,40,Soup
-17,Cajun Stuffed Peppers,Paleo,Internet,,https://www.justjessieb.com/2019/08/cajun-stuffed-peppers-with-special-sauce-paleo-whole30-keto/,,,,,440,37,12,16,Peppers
-18,Carne Asada,Omnivore,Internet,,https://damndelicious.net/2019/05/05/carne-asada/,,,,,330,18,4,35,Beef
-19,Cauliflower Fried Rice,Vegetarian,Internet,,https://www.loveandlemons.com/cauliflower-fried-rice/,,,,,330,20,20,15,Rice
-20,Cauliflower Fried Rice with Chicken & Pork,Paleo,Internet,,https://www.paleorunningmomma.com/cauliflower-fried-rice-paleo-whole30/,,,,,428,28,10,31,Rice
-21,Cauliflower Pork Fried Rice,Keto,Internet,,https://lowcarbyum.com/cauliflower-pork-fried-rice/,,,,,123,8,7,7,Rice
-22,Chewy Vegan Chai-Spiced Cookies,Vegan,Internet,,https://rainbowplantlife.com/chewy-vegan-chai-spiced-cookies/,,,,,240,13,24,6,Dessert
-23,Chicken Enchilada Bowl (Beauty and the Foodie),Keto,Internet,,https://beautyandthefoodie.com/keto-chicken-enchilada-bowls/,,,,,696,27,11,40,Enchilada
-24,Chicken Enchilada Bowl (Carb Manager),Keto,Internet,,https://www.carbmanager.com/recipe-detail/ug%3Af269d388-ef36-09b4-569e-e854a9521e0e/keto-chicken-enchilada-bowls,,,,,296,12.8,7.5,37.8,Enchilada
-25,Chicken Enchilada Bowl (Hey Mama),Keto,Internet,,https://www.heyketomama.com/keto-chicken-enchilada-bowl/,,,,,568,40,10,38,Enchilada
-26,Chicken Enchilada Casserole,Keto,Internet,,https://www.reddit.com/r/Keto_Food/comments/buwx24,,,,,438,28.4,6.7,35.6,Enchilada
-27,Chicken Enchiladas,Omnivore,Internet,,https://www.foodnetwork.com/recipes/tyler-florence/chicken-enchiladas-recipe-1907241,,,,,510,24,34,37,Enchilada
-28,Chicken Marsala with Bacon,Paleo/Keto,Internet,,https://www.paleorunningmomma.com/chicken-marsala-with-bacon-paleo-whole30-keto/,,,,,290,15,6,31,Chicken
-29,Chicken Pesto Stuffed Sweet Potatoes,Paleo,Internet,,https://www.paleorunningmomma.com/chicken-pesto-stuffed-sweet-potatoes-paleo-whole30/,,,,,530,33,28,44,Chicken
-30,Chicken Philly Cheesesteak Skillet (keto + low carb),Keto,Internet,,https://thebestketorecipes.com/chicken-philly-cheesesteak-skillet-keto-low-carb/,,,,,380,20,8,43,Skillet
-31,Classic EatingWell Zucchini Lasagna,Keto,Internet,,https://www.eatingwell.com/recipe/265895/zucchini-lasagna/,,,,,360,17,19,27,Lasagna
-32,Coconut Milk Poached Chicken with Quinoa and Roasted Broccolini,Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/coconut-milk-poached-chicken-with-quinoa-and-roasted-broccolini-21601284,,,,,480,24,30,35,Chicken
-33,Colombian-Style Zucchini Rellenos,Keto,Internet,,https://www.skinnytaste.com/colombian-style-zucchini-rellenos/,,,,,240,13,8,22,Zucchini
-34,Creamy Coleslaw,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/coleslaw-recipe/,,,,,130,11,7,1,Salad
-35,Creamy Spinach Artichoke Pasta,Paleo,Internet,,https://www.paleorunningmomma.com/creamy-spinach-artichoke-pasta-paleo-vegan/,,,,,340,21,29,7,Noodles
-36,Creamy Tortellini Soup,Paleo,Internet,,https://paleomg.com/creamy-tortellini-soup/#tasty-recipes-77535-jump-target,,,,,380,22,24,20,Soup
-37,Creamy Vegan Mushroom Soup,Vegan,Internet,,https://rainbowplantlife.com/vegan-mushroom-soup/,,,,,270,17,20,9,Soup
-38,Creamy Vegan Pasta,Vegan,Internet,,https://www.loveandlemons.com/vegan-pasta/,,,,,420,15,55,15,Noodles
-39,Crispy Tofu Sandwich,Vegan,Internet,,https://rainbowplantlife.com/tofu-sandwich/,,,,,530,30,45,18,Sandwich
-40,Curry Chicken Salad,Paleo,Internet,,https://nomnompaleo.com/post/108235360133/whole30-day-16-madras-chicken-salad,,,,,320,20,8,30,Salad
-41,Date Shake,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/date-shake/,,,,,320,10,38,20,Snack
-42,Easy Chicken Tacos with Mango Avocado Salsa,Paleo,Internet,,https://nomnompaleo.com/chicken-tacos,,,,,420,25,18,35,Tacos
-43,Easy Creamy Carrot Ginger Soup with Cardamom,Paleo,Internet,,https://nomnompaleo.com/post/82763611373/carrot-cardamom-soup,,,,,130,7,15,2,Soup
-44,Eggplant Lasagna,Keto,Internet,,https://www.reddit.com/r/ketorecipes/comments/e5z8sz,,,,,712,53.8,9.2,42.8,Lasagna
-45,Fajita Bowl,Keto,Internet,,https://drizzleofdelight.com/keto-chicken-fajita-bowl/ via Reddit,,,,,179,9.4,4.9,17.3,Bowls
-46,Fudgy Keto Brownies,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/fudgy-keto-brownies-5609048,,,,,120,11,3,3,Dessert
-47,Garlic Peanut Noodles,Vegan,Internet,,https://rainbowplantlife.com/peanut-noodles/,,,,,565,27,62,18,Noodles
-48,Gochujang Noodles,Vegan,Internet,,https://rainbowplantlife.com/gochujang-noodles/,,,,,460,22,53,12,Noodles
-49,Grilled Chicken with Avocado Pesto,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/grilled-chicken-with-avocado-pesto-3796532,,,,,420,28,5,36,Chicken
-50,Grilled Halloumi Berry Salad,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/grilled-halloumi-berry-salad/,,,,,195,13,10,8,Salad
-51,Healthy Air Fryer Turkey Meatballs with Zoodles,Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/healthy-air-fryer-turkey-meatballs-with-zoodles-9483246,,,,,360,18,14,33,Noodles
-52,Healthy Rice Cooker Garlic Shrimp with Chorizo,Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/healthy-rice-cooker-garlic-shrimp-with-chorizo-13661119,,,,,540,22,48,35,Rice
-53,Honey Garlic Salmon,Paleo,Internet,,https://www.paleorunningmomma.com/honey-garlic-salmon-paleo/,,,,,320,16,15,27,Seafood
-54,Hot and Sour Soup,Keto,Internet,,https://thebestketorecipes.com/hot-and-sour-soup/,,,,,115,8.5,4,8.5,Soup
-55,Instant Pot Keto Chili,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/instant-pot-keto-chili-5451408,,,,,690,48,9,47,Soup
-56,Italian Sausage Pasta Skillet,Omnivore,Internet,,https://www.foodnetwork.com/recipes/ree-drummond/italian-sausage-pasta-skillet-6601287,,,,,780,38,65,38,Noodles
-57,Kale Salad with Roasted Vegetables and Crispy Lentils,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/kale-salad-with-roasted-vegetables-and-crispy-lentils/,,,,,230,13,21,7,Salad
-58,Keto Bacon Cheeseburger Bowls,Keto,Internet,,https://www.foodnetwork.com/recipes/keto-bacon-cheeseburger-bowls-9584601,,,,,520,38,10,35,Bowls
-59,Keto Broccoli Cheese Bites,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/keto-broccoli-cheese-bites-7995953,,,,,50,4,1,2,Snack
-60,Keto Egg Cups,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/keto-egg-cups-5463043,,,,,380,28,3,26,Breakfast
-61,"Keto Loaded ""Baked Potato"" Soup",Keto,Internet,,https://www.foodnetwork.com/recipes/keto-loaded-baked-potato-soup-9584565,,,,,370,28,12,18,Soup
-62,Keto Pizza,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/keto-pizza-snacks-5225642,,,,,230,17,5,14,Pizza
-63,Keto Poached Salmon with Green Goddess Sauce,Keto,Internet,,https://www.foodnetwork.com/recipes/keto-poached-salmon-with-green-goddess-sauce-9584662,,,,,360,25,3,28,Seafood
-64,Keto Sheet Pan Chicken and Loaded Cauliflower,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/keto-sheet-pan-chicken-and-loaded-cauliflower-8050489,,,,,520,38,8,40,Cauliflower
-65,Keto Tuna Salad Cups,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/keto-tuna-salad-cups-5266429,,,,,470,36,4,35,Salad
-66,Keto Zucchini Lasagna (Low Carb Love),Keto,Internet,,https://www.lowcarblove.com/blog/keto-zucchini-lasagna-recipe,,,,,250,21,2.7,,Lasagna
-67,Lemon Artichoke Arugula Pasta Salad,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/lemon-artichoke-arugula-pasta-salad/,,,,,400,22,38,12,Salad
-68,Lemon Garlic Chicken Zucchini Skillet,Paleo/Keto,Internet,,https://www.paleorunningmomma.com/lemon-garlic-chicken-zucchini-skillet-paleo-keto-whole30/,,,,,280,18,5,24,Skillet
-69,Lemon-Garlic Herb Grilled Chicken,Paleo,Internet,,https://www.eatingwell.com/recipe/262867/grilled-lemon-herb-chicken/,,,,,188,8,1,26,Chicken
-70,Lemony White Bean Dip,Vegan,Internet,,https://rainbowplantlife.com/lemony-white-bean-dip/,,,,,190,13,14,6,Snack
-71,Low Carb & Keto Sesame Chicken Recipe,Keto,Internet,,https://www.tasteaholics.com/recipes/low-carb-keto/low-carb-sesame-chicken/,,,,,420,26,6,38,Chicken
-72,Mexican Cauliflower Fried Rice,Paleo,Internet,,https://www.paleorunningmomma.com/mexican-cauliflower-fried-rice-paleo-whole30/,,,,,335,27,9,15,Rice
-73,Mexican Street Corn Salad,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/mexican-street-corn-salad/,,,,,120,6,14,4,Salad
-74,Mojo Pork Bowls,Paleo,Internet,,https://paleomg.com/mojo-pork-bowls/,,,,,510,33,18,35,Bowls
-75,Moo Goo Gai Pan,Paleo,Internet,,https://nomnompaleo.com/moo-goo-gai-pan,,,,,350,18,15,35,Chicken
-76,No-Fry Sheet-Pan Eggplant Parmesan,Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/no-fry-sheet-pan-eggplant-parmesan-3543388,,,,,370,24,18,21,Lasagna
-77,One-Skillet Sweet and Sour Meatballs,Paleo,Internet,,https://www.paleorunningmomma.com/one-skillet-sweet-and-sour-meatballs-paleo/,,,,,425,31,11,27,Skillet
-78,Outrageously Good Vegan Spinach Artichoke Dip,Vegan,Internet,,https://rainbowplantlife.com/vegan-spinach-artichoke-dip/#recipe,,,,,365,24,26,11,Snack
-79,Paleo Beef Stir Fry with Veggies,Paleo,Internet,,https://www.paleorunningmomma.com/paleo-beef-stir-fry-with-veggies-whole30-keto/,,,,,270,16,7,26,Beef
-80,Paleo Cauliflower Fried Rice,Paleo,Internet,,https://www.realfoodwithjessica.com/paleo-cauliflower-fried-rice/,,,,,148,7,18,6,Rice
-81,Paleo Chicken Burrito Bowls,Paleo/Keto,Internet,,https://www.paleorunningmomma.com/mexican-cauliflower-fried-rice-paleo-whole30/,,,,,460,33,14,26,Bowls
-82,Paleo Stuffed Peppers (Joy Filled Eats),Paleo,Internet,,https://joyfilledeats.com/paleo-stuffed-peppers/,,,,,481,35,7,31,Peppers
-83,Paleo Turkey Bolognese with Garlic Spaghetti Squash,Paleo,Internet,,https://www.eatthis.com/paleo-turkey-bolognese-garlic-spaghetti-squash-recipe/,,,,,370,9,0,22,Bolognese
-84,Parmesan Lemon Chicken,Omnivore,Internet,,https://damndelicious.net/2024/05/03/parmesan-lemon-chicken/,,,,,450,28,8,45,Chicken
-85,Peanut Butter Chocolate Crunch Bars,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/chocolate-crunch-bars/,,,,,130,8,14,2,Dessert
-86,Pork Stuffed Bell Peppers,Paleo,Internet,,https://paleoleap.com/pork-stuffed-bell-peppers/,,,,,709,50,23,43,Peppers
-87,"Pork, Pepper and Rice Noodle Soup",Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/healthy-40-minute-pork-pepper-and-rice-noodle-soup-13650335,,,,,450,22,30,35,Soup
-88,Quick Stovetop Beanless Chili,Paleo/Keto,Internet,,https://www.paleorunningmomma.com/quick-stovetop-beanless-chili-paleo-whole30-keto/,,,,,304,19,9,26,Soup
-89,Reddit Keto Zucchini Lasagna,Keto,Internet,,https://www.reddit.com/r/ketorecipes/comments/13idqvx,,,,,265,19,5,20,Lasagna
-90,Rice Cooker Meal: Bibimbap,Omnivore,Internet,,https://nutritionbykylie.substack.com/p/rice-cooker-meal-bibimbap,,,,,575,20,73,27,Rice
-91,Roasted Vegetable Meatloaf with Balsamic Glaze,Omnivore,Internet,,https://www.foodnetwork.com/recipes/bobby-flay/roasted-vegetable-meatloaf-with-balsamic-glaze-recipe-2014387,,,,,510,28,22,39,Meatloaf
-92,Salmon BLT Salad with Chive Ranch Dressing,Keto,Internet,,https://www.paleorunningmomma.com/salmon-blt-salad-with-chive-ranch-dressing-paleo-whole30-keto/,,,,,540,40,8,35,Salad
-93,Salmon Cakes,Paleo/Keto,Internet,,https://www.paleorunningmomma.com/salmon-cakes-paleo-whole30-keto/,,,,,340,26,4,20,Seafood
-94,Salmon Wasabi Burgers,Keto,Internet,,https://elanaspantry.com/salmon-wasabi-burgers/,,,,,395,25,6,38,Burger
-95,Sausage-Stuffed Mini Peppers,Paleo,Internet,,https://www.frugalnutrition.com/sausage-stuffed-mini-peppers-gluten-free-paleo/,,,,,72,6,1,4,Snack
-96,Seriously The Best Tofu Scramble,Vegan,Internet,,https://rainbowplantlife.com/eggy-tofu-scramble/,,,,,225,15,9,17,Breakfast
-97,Sesame Noodle Salad,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/sesame-noodle-salad/,,,,,490,30,45,12,Salad
-98,Shashuka,Vegetarian,Internet,,https://www.loveandlemons.com/shakshuka-recipe/,,,,,270,18,12,13,Breakfast
-99,Sheet Pan Chicken and Veggies (Ratatouille-Style),Paleo,Internet,,https://nomnompaleo.com/sheet-pan-chicken-and-veggies,,,,,370,28,10,25,Chicken
-100,Sheet Pan Chicken Shawarma,Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/sheet-pan-chicken-shawarma-11398312,,,,,540,22,35,42,Chicken
-101,"Shrimp, White Bean and Feta Skillet",Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/shrimp-white-bean-and-feta-skillet-5293783,,,,,450,22,20,38,Skillet
-102,Spaghetti Squash Bolognese,Paleo,Internet,,https://www.paleorunningmomma.com/spaghetti‑squash‑bolognese‑paleo‑whole30/,,,,,365,26,17,18,Bolognese
-103,Spicy Korean Cucumber Salad,Vegan,Internet,,https://rainbowplantlife.com/spicy-cucumber-salad/,,,,,180,8,14,3,Salad
-104,Spinach Artichoke Sun-Dried Tomato Dip,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/spinach-artichoke-sun-dried-tomato-dip/,,,,,160,13,3,6,Snack
-105,Spring Minestrone Soup,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/spring-minestrone-soup/,,,,,225,7,30,10,Soup
-106,Spring Rolls,Vegan,Internet,,https://www.loveandlemons.com/fresh-spring-rolls/,,,,,285,12,35,6,Snack
-107,Stuffed Bell Peppers with Tomato Sauce,Paleo,Internet,,https://paleoleap.com/stuffed-bell-peppers-with-tomato-sauce/,,,,,328,23,14,18,Peppers
-108,Stuffed Mushrooms,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/stuffed-mushrooms/,,,,,25,1.5,1.5,1,Snack
-109,Sweet and Tangy Chicken Burgers,Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/sweet-and-tangy-chicken-burgers-1927968,,,,,410,12,38,35,Burger
-110,Thai BBQ Pork Salad,Keto,Internet,,https://www.ruled.me/thai-bbq-pork-salad/,,,,,459,33,11,29,Salad
-111,Thai Red Curry Noodle Soup,Omnivore,Internet,,https://damndelicious.net/2018/04/18/thai-red-curry-noodle-soup/,,,,,360,14,27,35,Soup
-112,Tuscan Garlic Shrimp,Paleo,Internet,,https://www.paleorunningmomma.com/garlic-tuscan-shrimp-paleo-whole30/,,,,,330,22,9,25,Seafood
-113,Vegan Banana Pancakes,Vegan,Internet,,https://rainbowplantlife.com/vegan-banana-pancakes/,,,,,270,7,48,5,Breakfast
-114,Vegan Buffalo Cauliflower,Vegan,Internet,,https://rainbowplantlife.com/vegan-buffalo-cauliflower/#recipe,,,,,260,11,38,4,Cauliflower
-115,Vegan Enchiladas,Vegan,Internet,,https://www.loveandlemons.com/vegan-enchiladas/,,,,,375,20,38,9,Enchilada
-116,Vegan Zucchini Fritters,Vegan,Internet,,https://rainbowplantlife.com/vegan-zucchini-fritters/,,,,,120,10,22,6,Snack
-117,Vegetarian Lasagna,Vegetarian,Internet,,https://www.loveandlemons.com/vegetarian-lasagna/,,,,,430,20,38,24,Lasagna
-118,Vegetarian Stuffed Peppers,Vegetarian,Internet,,https://www.loveandlemons.com/vegetarian-stuffed-peppers/,,,,,390,17,44,16,Peppers
-119,Vegetarian Taco Skillet,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/vegetarian-taco-skillet/#wprm-recipe-container-57141,,,,,330,9,45,15,Tacos
-120,White Chicken Chili,Omnivore,Internet,,https://nutritionbykylie.substack.com/p/white-chicken-chili,,,,,365,6,34,38,Soup
-121,Zucchini Lasagna (Whole30 + Paleo),Paleo,Internet,,https://realsimplegood.com/paleo-zucchini-lasagna/,,,,,422,33,10,21,Lasagna
-122,Zucchini Noodles w/ Pesto & Grilled Shrimp,Paleo,Internet,,https://healthyfitnessmeals.com/pesto-shrimp-zoodles/,,,,,325,18,9,29,Noodles
+recipe_name,recipe_type,recipe_source,source_user_id,recipe_url,ingredients,instructions,ingredients,directions,calories,fat,carbs,protein,extra_categories
+10-min Breakfast: Chinese Tomato Eggs,Omnivore,Internet,,https://nutritionbykylie.substack.com/p/10-min-breakfast-chinese-tomato-eggs,,,,,240,14,14,12,Breakfast
+15-Minute Shrimp Tacos with Spicy Chipotle Slaw,Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/15-minute-shrimp-tacos-with-spicy-chipotle-slaw-3676441,,,,,560,29,35,35,Tacos
+Actually Good Quinoa Salad,Vegan,Internet,,https://rainbowplantlife.com/quinoa-salad/,,,,,470,27,39,15,Salad
+Aloo Gobi,Vegan,Internet,,https://rainbowplantlife.com/aloo-gobi/,,,,,240,14,27,4,Cauliflower
+Avocado Frittata with Cotija and Mozzarella Cheese,Keto,Internet,,https://kalynskitchen.com/avocado-frittata-with-cotija-mozzarella/,,,,,190,15,4,10,Breakfast
+Bacon Cheeseburger Casserole,Keto,Internet,,https://www.lowcarbyum.com/bacon-cheeseburger-casserole/,,,,,577,49,5,28,Burger
+Balsamic Chicken Salad,Omnivore,Internet,,https://damndelicious.net/2025/05/30/balsamic-chicken-salad/,,,,,570,42,14,38,Salad
+Best Vegan Pizza,Vegan,Internet,,https://www.loveandlemons.com/vegan-pizza/,,,,,290,11,39,6,Pizza
+Best Veggie Burger,Vegan,Internet,,https://www.loveandlemons.com/best-veggie-burger-recipe/,,,,,370,21,36,9,Burger
+Black Bean Burger (no cheese/avocado),Vegetarian,Internet,,https://www.twopeasandtheirpod.com/black-bean-burger/,,,,,310,8,43,13,Burger
+BLT Pasta Salad,Paleo,Internet,,https://www.bigy.com/rs/recipes/blt-pasta-salad/9052,,,,,277,15,28,9,Salad
+Braised Tofu,Vegan,Internet,,https://rainbowplantlife.com/braised-tofu/,,,,,370,18,33,17,Tofu
+Broccoli Feta Fritatta,Vegetarian,Internet,,https://www.loveandlemons.com/frittata-recipe/,,,,,210,15,5,15,Breakfast
+"Brussels Sprouts Salad with Dates, Parmesan Cheese, Pistachios & Creamy Lemon Dressing",Vegetarian,Internet,,https://www.twopeasandtheirpod.com/brussels-sprouts-salad-with-dates-parmesan-cheese-pistachios/,,,,,240,14,20,10,Salad
+Butternut Squash Orzo,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/butternut-squash-orzo/,,,,,440,25,45,10,Chicken
+Cajun Gumbo With Chicken and Andouille Sausage Recipe,Omnivore,Internet,,https://www.seriouseats.com/cajun-gumbo-with-chicken-and-andouille-recipe,,,,,580,40,20,40,Soup
+Cajun Stuffed Peppers,Paleo,Internet,,https://www.justjessieb.com/2019/08/cajun-stuffed-peppers-with-special-sauce-paleo-whole30-keto/,,,,,440,37,12,16,Peppers
+Carne Asada,Omnivore,Internet,,https://damndelicious.net/2019/05/05/carne-asada/,,,,,330,18,4,35,Beef
+Cauliflower Fried Rice,Vegetarian,Internet,,https://www.loveandlemons.com/cauliflower-fried-rice/,,,,,330,20,20,15,Rice
+Cauliflower Fried Rice with Chicken & Pork,Paleo,Internet,,https://www.paleorunningmomma.com/cauliflower-fried-rice-paleo-whole30/,,,,,428,28,10,31,Rice
+Cauliflower Pork Fried Rice,Keto,Internet,,https://lowcarbyum.com/cauliflower-pork-fried-rice/,,,,,123,8,7,7,Rice
+Chewy Vegan Chai-Spiced Cookies,Vegan,Internet,,https://rainbowplantlife.com/chewy-vegan-chai-spiced-cookies/,,,,,240,13,24,6,Dessert
+Chicken Enchilada Bowl (Beauty and the Foodie),Keto,Internet,,https://beautyandthefoodie.com/keto-chicken-enchilada-bowls/,,,,,696,27,11,40,Enchilada
+Chicken Enchilada Bowl (Carb Manager),Keto,Internet,,https://www.carbmanager.com/recipe-detail/ug%3Af269d388-ef36-09b4-569e-e854a9521e0e/keto-chicken-enchilada-bowls,,,,,296,12.8,7.5,37.8,Enchilada
+Chicken Enchilada Bowl (Hey Mama),Keto,Internet,,https://www.heyketomama.com/keto-chicken-enchilada-bowl/,,,,,568,40,10,38,Enchilada
+Chicken Enchilada Casserole,Keto,Internet,,https://www.reddit.com/r/Keto_Food/comments/buwx24,,,,,438,28.4,6.7,35.6,Enchilada
+Chicken Enchiladas,Omnivore,Internet,,https://www.foodnetwork.com/recipes/tyler-florence/chicken-enchiladas-recipe-1907241,,,,,510,24,34,37,Enchilada
+Chicken Marsala with Bacon,Paleo/Keto,Internet,,https://www.paleorunningmomma.com/chicken-marsala-with-bacon-paleo-whole30-keto/,,,,,290,15,6,31,Chicken
+Chicken Pesto Stuffed Sweet Potatoes,Paleo,Internet,,https://www.paleorunningmomma.com/chicken-pesto-stuffed-sweet-potatoes-paleo-whole30/,,,,,530,33,28,44,Chicken
+Chicken Philly Cheesesteak Skillet (keto + low carb),Keto,Internet,,https://thebestketorecipes.com/chicken-philly-cheesesteak-skillet-keto-low-carb/,,,,,380,20,8,43,Skillet
+Classic EatingWell Zucchini Lasagna,Keto,Internet,,https://www.eatingwell.com/recipe/265895/zucchini-lasagna/,,,,,360,17,19,27,Lasagna
+Coconut Milk Poached Chicken with Quinoa and Roasted Broccolini,Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/coconut-milk-poached-chicken-with-quinoa-and-roasted-broccolini-21601284,,,,,480,24,30,35,Chicken
+Colombian-Style Zucchini Rellenos,Keto,Internet,,https://www.skinnytaste.com/colombian-style-zucchini-rellenos/,,,,,240,13,8,22,Zucchini
+Creamy Coleslaw,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/coleslaw-recipe/,,,,,130,11,7,1,Salad
+Creamy Spinach Artichoke Pasta,Paleo,Internet,,https://www.paleorunningmomma.com/creamy-spinach-artichoke-pasta-paleo-vegan/,,,,,340,21,29,7,Noodles
+Creamy Tortellini Soup,Paleo,Internet,,https://paleomg.com/creamy-tortellini-soup/#tasty-recipes-77535-jump-target,,,,,380,22,24,20,Soup
+Creamy Vegan Mushroom Soup,Vegan,Internet,,https://rainbowplantlife.com/vegan-mushroom-soup/,,,,,270,17,20,9,Soup
+Creamy Vegan Pasta,Vegan,Internet,,https://www.loveandlemons.com/vegan-pasta/,,,,,420,15,55,15,Noodles
+Crispy Tofu Sandwich,Vegan,Internet,,https://rainbowplantlife.com/tofu-sandwich/,,,,,530,30,45,18,Sandwich
+Curry Chicken Salad,Paleo,Internet,,https://nomnompaleo.com/post/108235360133/whole30-day-16-madras-chicken-salad,,,,,320,20,8,30,Salad
+Date Shake,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/date-shake/,,,,,320,10,38,20,Snack
+Easy Chicken Tacos with Mango Avocado Salsa,Paleo,Internet,,https://nomnompaleo.com/chicken-tacos,,,,,420,25,18,35,Tacos
+Easy Creamy Carrot Ginger Soup with Cardamom,Paleo,Internet,,https://nomnompaleo.com/post/82763611373/carrot-cardamom-soup,,,,,130,7,15,2,Soup
+Eggplant Lasagna,Keto,Internet,,https://www.reddit.com/r/ketorecipes/comments/e5z8sz,,,,,712,53.8,9.2,42.8,Lasagna
+Fajita Bowl,Keto,Internet,,https://drizzleofdelight.com/keto-chicken-fajita-bowl/ via Reddit,,,,,179,9.4,4.9,17.3,Bowls
+Fudgy Keto Brownies,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/fudgy-keto-brownies-5609048,,,,,120,11,3,3,Dessert
+Garlic Peanut Noodles,Vegan,Internet,,https://rainbowplantlife.com/peanut-noodles/,,,,,565,27,62,18,Noodles
+Gochujang Noodles,Vegan,Internet,,https://rainbowplantlife.com/gochujang-noodles/,,,,,460,22,53,12,Noodles
+Grilled Chicken with Avocado Pesto,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/grilled-chicken-with-avocado-pesto-3796532,,,,,420,28,5,36,Chicken
+Grilled Halloumi Berry Salad,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/grilled-halloumi-berry-salad/,,,,,195,13,10,8,Salad
+Healthy Air Fryer Turkey Meatballs with Zoodles,Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/healthy-air-fryer-turkey-meatballs-with-zoodles-9483246,,,,,360,18,14,33,Noodles
+Healthy Rice Cooker Garlic Shrimp with Chorizo,Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/healthy-rice-cooker-garlic-shrimp-with-chorizo-13661119,,,,,540,22,48,35,Rice
+Honey Garlic Salmon,Paleo,Internet,,https://www.paleorunningmomma.com/honey-garlic-salmon-paleo/,,,,,320,16,15,27,Seafood
+Hot and Sour Soup,Keto,Internet,,https://thebestketorecipes.com/hot-and-sour-soup/,,,,,115,8.5,4,8.5,Soup
+Instant Pot Keto Chili,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/instant-pot-keto-chili-5451408,,,,,690,48,9,47,Soup
+Italian Sausage Pasta Skillet,Omnivore,Internet,,https://www.foodnetwork.com/recipes/ree-drummond/italian-sausage-pasta-skillet-6601287,,,,,780,38,65,38,Noodles
+Kale Salad with Roasted Vegetables and Crispy Lentils,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/kale-salad-with-roasted-vegetables-and-crispy-lentils/,,,,,230,13,21,7,Salad
+Keto Bacon Cheeseburger Bowls,Keto,Internet,,https://www.foodnetwork.com/recipes/keto-bacon-cheeseburger-bowls-9584601,,,,,520,38,10,35,Bowls
+Keto Broccoli Cheese Bites,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/keto-broccoli-cheese-bites-7995953,,,,,50,4,1,2,Snack
+Keto Egg Cups,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/keto-egg-cups-5463043,,,,,380,28,3,26,Breakfast
+"Keto Loaded ""Baked Potato"" Soup",Keto,Internet,,https://www.foodnetwork.com/recipes/keto-loaded-baked-potato-soup-9584565,,,,,370,28,12,18,Soup
+Keto Pizza,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/keto-pizza-snacks-5225642,,,,,230,17,5,14,Pizza
+Keto Poached Salmon with Green Goddess Sauce,Keto,Internet,,https://www.foodnetwork.com/recipes/keto-poached-salmon-with-green-goddess-sauce-9584662,,,,,360,25,3,28,Seafood
+Keto Sheet Pan Chicken and Loaded Cauliflower,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/keto-sheet-pan-chicken-and-loaded-cauliflower-8050489,,,,,520,38,8,40,Cauliflower
+Keto Tuna Salad Cups,Keto,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/keto-tuna-salad-cups-5266429,,,,,470,36,4,35,Salad
+Keto Zucchini Lasagna (Low Carb Love),Keto,Internet,,https://www.lowcarblove.com/blog/keto-zucchini-lasagna-recipe,,,,,250,21,2.7,,Lasagna
+Lemon Artichoke Arugula Pasta Salad,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/lemon-artichoke-arugula-pasta-salad/,,,,,400,22,38,12,Salad
+Lemon Garlic Chicken Zucchini Skillet,Paleo/Keto,Internet,,https://www.paleorunningmomma.com/lemon-garlic-chicken-zucchini-skillet-paleo-keto-whole30/,,,,,280,18,5,24,Skillet
+Lemon-Garlic Herb Grilled Chicken,Paleo,Internet,,https://www.eatingwell.com/recipe/262867/grilled-lemon-herb-chicken/,,,,,188,8,1,26,Chicken
+Lemony White Bean Dip,Vegan,Internet,,https://rainbowplantlife.com/lemony-white-bean-dip/,,,,,190,13,14,6,Snack
+Low Carb & Keto Sesame Chicken Recipe,Keto,Internet,,https://www.tasteaholics.com/recipes/low-carb-keto/low-carb-sesame-chicken/,,,,,420,26,6,38,Chicken
+Mexican Cauliflower Fried Rice,Paleo,Internet,,https://www.paleorunningmomma.com/mexican-cauliflower-fried-rice-paleo-whole30/,,,,,335,27,9,15,Rice
+Mexican Street Corn Salad,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/mexican-street-corn-salad/,,,,,120,6,14,4,Salad
+Mojo Pork Bowls,Paleo,Internet,,https://paleomg.com/mojo-pork-bowls/,,,,,510,33,18,35,Bowls
+Moo Goo Gai Pan,Paleo,Internet,,https://nomnompaleo.com/moo-goo-gai-pan,,,,,350,18,15,35,Chicken
+No-Fry Sheet-Pan Eggplant Parmesan,Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/no-fry-sheet-pan-eggplant-parmesan-3543388,,,,,370,24,18,21,Lasagna
+One-Skillet Sweet and Sour Meatballs,Paleo,Internet,,https://www.paleorunningmomma.com/one-skillet-sweet-and-sour-meatballs-paleo/,,,,,425,31,11,27,Skillet
+Outrageously Good Vegan Spinach Artichoke Dip,Vegan,Internet,,https://rainbowplantlife.com/vegan-spinach-artichoke-dip/#recipe,,,,,365,24,26,11,Snack
+Paleo Beef Stir Fry with Veggies,Paleo,Internet,,https://www.paleorunningmomma.com/paleo-beef-stir-fry-with-veggies-whole30-keto/,,,,,270,16,7,26,Beef
+Paleo Cauliflower Fried Rice,Paleo,Internet,,https://www.realfoodwithjessica.com/paleo-cauliflower-fried-rice/,,,,,148,7,18,6,Rice
+Paleo Chicken Burrito Bowls,Paleo/Keto,Internet,,https://www.paleorunningmomma.com/mexican-cauliflower-fried-rice-paleo-whole30/,,,,,460,33,14,26,Bowls
+Paleo Stuffed Peppers (Joy Filled Eats),Paleo,Internet,,https://joyfilledeats.com/paleo-stuffed-peppers/,,,,,481,35,7,31,Peppers
+Paleo Turkey Bolognese with Garlic Spaghetti Squash,Paleo,Internet,,https://www.eatthis.com/paleo-turkey-bolognese-garlic-spaghetti-squash-recipe/,,,,,370,9,0,22,Bolognese
+Parmesan Lemon Chicken,Omnivore,Internet,,https://damndelicious.net/2024/05/03/parmesan-lemon-chicken/,,,,,450,28,8,45,Chicken
+Peanut Butter Chocolate Crunch Bars,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/chocolate-crunch-bars/,,,,,130,8,14,2,Dessert
+Pork Stuffed Bell Peppers,Paleo,Internet,,https://paleoleap.com/pork-stuffed-bell-peppers/,,,,,709,50,23,43,Peppers
+"Pork, Pepper and Rice Noodle Soup",Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/healthy-40-minute-pork-pepper-and-rice-noodle-soup-13650335,,,,,450,22,30,35,Soup
+Quick Stovetop Beanless Chili,Paleo/Keto,Internet,,https://www.paleorunningmomma.com/quick-stovetop-beanless-chili-paleo-whole30-keto/,,,,,304,19,9,26,Soup
+Reddit Keto Zucchini Lasagna,Keto,Internet,,https://www.reddit.com/r/ketorecipes/comments/13idqvx,,,,,265,19,5,20,Lasagna
+Rice Cooker Meal: Bibimbap,Omnivore,Internet,,https://nutritionbykylie.substack.com/p/rice-cooker-meal-bibimbap,,,,,575,20,73,27,Rice
+Roasted Vegetable Meatloaf with Balsamic Glaze,Omnivore,Internet,,https://www.foodnetwork.com/recipes/bobby-flay/roasted-vegetable-meatloaf-with-balsamic-glaze-recipe-2014387,,,,,510,28,22,39,Meatloaf
+Salmon BLT Salad with Chive Ranch Dressing,Keto,Internet,,https://www.paleorunningmomma.com/salmon-blt-salad-with-chive-ranch-dressing-paleo-whole30-keto/,,,,,540,40,8,35,Salad
+Salmon Cakes,Paleo/Keto,Internet,,https://www.paleorunningmomma.com/salmon-cakes-paleo-whole30-keto/,,,,,340,26,4,20,Seafood
+Salmon Wasabi Burgers,Keto,Internet,,https://elanaspantry.com/salmon-wasabi-burgers/,,,,,395,25,6,38,Burger
+Sausage-Stuffed Mini Peppers,Paleo,Internet,,https://www.frugalnutrition.com/sausage-stuffed-mini-peppers-gluten-free-paleo/,,,,,72,6,1,4,Snack
+Seriously The Best Tofu Scramble,Vegan,Internet,,https://rainbowplantlife.com/eggy-tofu-scramble/,,,,,225,15,9,17,Breakfast
+Sesame Noodle Salad,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/sesame-noodle-salad/,,,,,490,30,45,12,Salad
+Shashuka,Vegetarian,Internet,,https://www.loveandlemons.com/shakshuka-recipe/,,,,,270,18,12,13,Breakfast
+Sheet Pan Chicken and Veggies (Ratatouille-Style),Paleo,Internet,,https://nomnompaleo.com/sheet-pan-chicken-and-veggies,,,,,370,28,10,25,Chicken
+Sheet Pan Chicken Shawarma,Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/sheet-pan-chicken-shawarma-11398312,,,,,540,22,35,42,Chicken
+"Shrimp, White Bean and Feta Skillet",Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/shrimp-white-bean-and-feta-skillet-5293783,,,,,450,22,20,38,Skillet
+Spaghetti Squash Bolognese,Paleo,Internet,,https://www.paleorunningmomma.com/spaghetti‑squash‑bolognese‑paleo‑whole30/,,,,,365,26,17,18,Bolognese
+Spicy Korean Cucumber Salad,Vegan,Internet,,https://rainbowplantlife.com/spicy-cucumber-salad/,,,,,180,8,14,3,Salad
+Spinach Artichoke Sun-Dried Tomato Dip,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/spinach-artichoke-sun-dried-tomato-dip/,,,,,160,13,3,6,Snack
+Spring Minestrone Soup,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/spring-minestrone-soup/,,,,,225,7,30,10,Soup
+Spring Rolls,Vegan,Internet,,https://www.loveandlemons.com/fresh-spring-rolls/,,,,,285,12,35,6,Snack
+Stuffed Bell Peppers with Tomato Sauce,Paleo,Internet,,https://paleoleap.com/stuffed-bell-peppers-with-tomato-sauce/,,,,,328,23,14,18,Peppers
+Stuffed Mushrooms,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/stuffed-mushrooms/,,,,,25,1.5,1.5,1,Snack
+Sweet and Tangy Chicken Burgers,Omnivore,Internet,,https://www.foodnetwork.com/recipes/food-network-kitchen/sweet-and-tangy-chicken-burgers-1927968,,,,,410,12,38,35,Burger
+Thai BBQ Pork Salad,Keto,Internet,,https://www.ruled.me/thai-bbq-pork-salad/,,,,,459,33,11,29,Salad
+Thai Red Curry Noodle Soup,Omnivore,Internet,,https://damndelicious.net/2018/04/18/thai-red-curry-noodle-soup/,,,,,360,14,27,35,Soup
+Tuscan Garlic Shrimp,Paleo,Internet,,https://www.paleorunningmomma.com/garlic-tuscan-shrimp-paleo-whole30/,,,,,330,22,9,25,Seafood
+Vegan Banana Pancakes,Vegan,Internet,,https://rainbowplantlife.com/vegan-banana-pancakes/,,,,,270,7,48,5,Breakfast
+Vegan Buffalo Cauliflower,Vegan,Internet,,https://rainbowplantlife.com/vegan-buffalo-cauliflower/#recipe,,,,,260,11,38,4,Cauliflower
+Vegan Enchiladas,Vegan,Internet,,https://www.loveandlemons.com/vegan-enchiladas/,,,,,375,20,38,9,Enchilada
+Vegan Zucchini Fritters,Vegan,Internet,,https://rainbowplantlife.com/vegan-zucchini-fritters/,,,,,120,10,22,6,Snack
+Vegetarian Lasagna,Vegetarian,Internet,,https://www.loveandlemons.com/vegetarian-lasagna/,,,,,430,20,38,24,Lasagna
+Vegetarian Stuffed Peppers,Vegetarian,Internet,,https://www.loveandlemons.com/vegetarian-stuffed-peppers/,,,,,390,17,44,16,Peppers
+Vegetarian Taco Skillet,Vegetarian,Internet,,https://www.twopeasandtheirpod.com/vegetarian-taco-skillet/#wprm-recipe-container-57141,,,,,330,9,45,15,Tacos
+White Chicken Chili,Omnivore,Internet,,https://nutritionbykylie.substack.com/p/white-chicken-chili,,,,,365,6,34,38,Soup
+Zucchini Lasagna (Whole30 + Paleo),Paleo,Internet,,https://realsimplegood.com/paleo-zucchini-lasagna/,,,,,422,33,10,21,Lasagna
+Zucchini Noodles w/ Pesto & Grilled Shrimp,Paleo,Internet,,https://healthyfitnessmeals.com/pesto-shrimp-zoodles/,,,,,325,18,9,29,Noodles
