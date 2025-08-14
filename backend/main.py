@@ -36,6 +36,7 @@ class User(BaseModel):
     name: str
     email: str
     weight_goal: Optional[str] = None
+    password: Optional[str] = None
 
 class Activity(BaseModel):
     activity_id: Optional[int] = None
@@ -87,6 +88,10 @@ class RecipeGenerationRequest(BaseModel):
     user_directions: str
     model: Optional[str] = "gpt-3.5-turbo"
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
 # Basic endpoints
 @app.get("/")
 async def root():
@@ -134,16 +139,54 @@ async def init_database():
     """Initialize database tables"""
     return initialize_database()
 
+@app.post("/login")
+async def login(login_request: LoginRequest):
+    """Attempt to login with email and password"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Check if user exists with the provided email and password
+        cursor.execute("""
+            SELECT id, name, email, weight_goal 
+            FROM users 
+            WHERE email = %s AND password = %s
+        """, (login_request.email, login_request.password))
+        
+        user_row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        if user_row:
+            return {
+                "success": True,
+                "message": "Login successful",
+                "user": {
+                    "id": user_row[0],
+                    "name": user_row[1],
+                    "email": user_row[2],
+                    "weight_goal": user_row[3]
+                }
+            }
+        else:
+            return {
+                "success": False,
+                "message": "Invalid email or password"
+            }
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
+
 # User endpoints
 @app.get("/users", response_model=List[User])
 async def get_users():
     """Get all users"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name, email, weight_goal FROM users ORDER BY id")
+    cursor.execute("SELECT id, name, email, weight_goal, password FROM users ORDER BY id")
     users = []
     for row in cursor.fetchall():
-        users.append(User(id=row[0], name=row[1], email=row[2], weight_goal=row[3]))
+        users.append(User(id=row[0], name=row[1], email=row[2], weight_goal=row[3], password=row[4]))
     cursor.close()
     conn.close()
     return users
@@ -153,12 +196,12 @@ async def get_user(user_id: int):
     """Get a specific user"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name, email, weight_goal FROM users WHERE id = %s", (user_id,))
+    cursor.execute("SELECT id, name, email, weight_goal, password FROM users WHERE id = %s", (user_id,))
     row = cursor.fetchone()
     cursor.close()
     conn.close()
     if row:
-        return User(id=row[0], name=row[1], email=row[2], weight_goal=row[3])
+        return User(id=row[0], name=row[1], email=row[2], weight_goal=row[3], password=row[4])
     return {"error": "User not found"}
 
 @app.post("/users", response_model=User)
@@ -168,14 +211,14 @@ async def create_user(user: User):
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO users (name, email, weight_goal) VALUES (%s, %s, %s) RETURNING id, name, email, weight_goal, created_at",
-            (user.name, user.email, user.weight_goal)
+            "INSERT INTO users (name, email, weight_goal, password) VALUES (%s, %s, %s, %s) RETURNING id, name, email, weight_goal, password, created_at",
+            (user.name, user.email, user.weight_goal, user.password)
         )
         row = cursor.fetchone()
         conn.commit()
         cursor.close()
         conn.close()
-        return User(id=row[0], name=row[1], email=row[2], weight_goal=row[3])
+        return User(id=row[0], name=row[1], email=row[2], weight_goal=row[3], password=row[4])
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -881,12 +924,13 @@ async def load_user_data():
                 
                 # Insert user
                 cursor.execute("""
-                    INSERT INTO users (id, name, email) 
-                    VALUES (%s, %s, %s)
+                    INSERT INTO users (id, name, email, password) 
+                    VALUES (%s, %s, %s, %s)
                 """, (
                     int(row['id']),
                     row['name'],
-                    row['email']
+                    row['email'],
+                    row['password']
                 ))
                 users_loaded += 1
         
@@ -982,12 +1026,13 @@ async def load_test_data():
                 for row in csv_reader:
                     # Insert user (let database auto-generate id)
                     cursor.execute("""
-                        INSERT INTO users (name, email, weight_goal) 
-                        VALUES (%s, %s, %s)
+                        INSERT INTO users (name, email, weight_goal, password) 
+                        VALUES (%s, %s, %s, %s)
                     """, (
                         row['name'],
                         row['email'],
-                        row['weight_goal'] if 'weight_goal' in row and row['weight_goal'] else None
+                        row['weight_goal'] if 'weight_goal' in row and row['weight_goal'] else None,
+                        row['password']
                     ))
                     results["users_loaded"] += 1
         except FileNotFoundError:
@@ -1235,4 +1280,4 @@ async def load_recipe_data():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="0.0.0.0", port=8080) 
