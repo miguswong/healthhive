@@ -42,6 +42,18 @@ data class Activity(
     @Json(name = "activity_date") val activityDate: String
 )
 
+data class Biometrics(
+    @Json(name = "biometric_id") val biometricId: Int?,
+    @Json(name = "user_id") val userId: Int,
+    val date: String,
+    val weight: Double?,
+    @Json(name = "weight_units") val weightUnits: String?,
+    @Json(name = "avg_hr") val avgHr: Int?,
+    @Json(name = "high_hr") val highHr: Int?,
+    @Json(name = "low_hr") val lowHr: Int?,
+    val notes: String?
+)
+
 data class LatestWeight(
     val weight: Double?,
     @Json(name = "weight_units") val weightUnits: String?,

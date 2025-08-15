@@ -2,6 +2,7 @@ package com.example.fitnessapp.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -20,7 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
-fun DataScreen(userId: Int, onGenerateRecipe: () -> Unit) {
+fun DataScreen(userId: Int, onGenerateRecipe: () -> Unit, onBrowseRecipes: () -> Unit, onViewBiometrics: () -> Unit) {
     val api = remember { ApiService.create("https://backend-45111119432.us-central1.run.app/") }
     val latestWeightState = remember { mutableStateOf<LatestWeight?>(null) }
     val activitiesState = remember { mutableStateOf<List<Activity>>(emptyList()) }
@@ -51,8 +52,14 @@ fun DataScreen(userId: Int, onGenerateRecipe: () -> Unit) {
             }
         }
 
-        Button(onClick = onGenerateRecipe, modifier = Modifier.padding(top = 24.dp)) {
+        Button(onClick = onGenerateRecipe, modifier = Modifier.fillMaxWidth().padding(top = 24.dp)) {
             Text("Generate Recipe")
+        }
+        Button(onClick = onBrowseRecipes, modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
+            Text("Browse Recipes")
+        }
+        Button(onClick = onViewBiometrics, modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
+            Text("View Biometrics")
         }
     }
 }

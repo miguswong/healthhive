@@ -32,7 +32,7 @@ app.add_middleware(
 
 # Simple data models
 class User(BaseModel):
-    id: int
+    id: Optional[int] = None
     name: str
     email: str
     weight_goal: Optional[str] = None
@@ -917,17 +917,16 @@ async def load_user_data():
             csv_reader = csv.DictReader(file)
             
             for row in csv_reader:
-                # Skip if user already exists
-                cursor.execute("SELECT id FROM users WHERE id = %s", (int(row['id']),))
+                # Skip if user already exists by email
+                cursor.execute("SELECT id FROM users WHERE email = %s", (row['email'],))
                 if cursor.fetchone():
                     continue
-                
-                # Insert user
+
+                # Insert user with auto-generated id
                 cursor.execute("""
-                    INSERT INTO users (id, name, email, password) 
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO users (name, email, password) 
+                    VALUES (%s, %s, %s)
                 """, (
-                    int(row['id']),
                     row['name'],
                     row['email'],
                     row['password']

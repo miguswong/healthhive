@@ -17,5 +17,24 @@ Thumbs.db
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
+# Android build files
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/.idea/
+android/*.iml
+android/app/*.iml
+
+# Android generated files
+android/app/src/main/assets/
+android/app/release/
+android/app/debug/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
 
 

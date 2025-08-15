@@ -2,9 +2,13 @@ package com.example.fitnessapp.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -17,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.example.fitnessapp.data.ApiService
 import com.example.fitnessapp.data.GenerateRecipeResponse
 import com.example.fitnessapp.data.RecipeGenerationRequest
+import com.example.fitnessapp.utils.formatListString
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,13 +37,15 @@ fun RecipeScreen(userId: Int, onBack: () -> Unit) {
 
     val scope = rememberCoroutineScope()
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState())
+    ) {
         Text("Recipe Generator", style = MaterialTheme.typography.headlineSmall)
         OutlinedTextField(
             value = prompt.value,
             onValueChange = { prompt.value = it },
             label = { Text("Tell us what you want to eat") },
-            modifier = Modifier.padding(top = 12.dp)
+            modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
         )
 
         Button(onClick = {
@@ -56,7 +63,7 @@ fun RecipeScreen(userId: Int, onBack: () -> Unit) {
                     loading.value = false
                 }
             }
-        }, modifier = Modifier.padding(top = 12.dp), enabled = !loading.value) {
+        }, modifier = Modifier.fillMaxWidth().padding(top = 12.dp), enabled = !loading.value) {
             Text("Generate")
         }
 
@@ -65,25 +72,46 @@ fun RecipeScreen(userId: Int, onBack: () -> Unit) {
         }
 
         result.value?.recipe?.let { r ->
-            Text("${result.value?.message ?: ""}", modifier = Modifier.padding(top = 12.dp))
-            Card(modifier = Modifier.padding(top = 12.dp)) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text(r.recipeName, style = MaterialTheme.typography.titleMedium)
-                    if (!r.recipeType.isNullOrBlank()) Text("Type: ${r.recipeType}")
+            Card(modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(r.recipeName, style = MaterialTheme.typography.headlineSmall)
+                    
+                    if (!r.recipeType.isNullOrBlank()) {
+                        Text("Type: ${r.recipeType}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp))
+                    }
+                    
                     if (!r.ingredients.isNullOrBlank()) {
-                        Text("Ingredients:")
-                        Text(r.ingredients ?: "")
+                        Text("Ingredients", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
+                        Text(formatListString(r.ingredients), modifier = Modifier.padding(top = 8.dp))
                     }
+                    
                     if (!r.instructions.isNullOrBlank()) {
-                        Text("Instructions:")
-                        Text(r.instructions ?: "")
+                        Text("Instructions", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
+                        Text(formatListString(r.instructions), modifier = Modifier.padding(top = 8.dp))
                     }
-                    Text("Calories: ${r.calories ?: 0}, Protein: ${r.protein ?: 0.0}g, Carbs: ${r.carbs ?: 0.0}g, Fat: ${r.fat ?: 0.0}g")
+                    
+                    if (!r.extraCategories.isNullOrBlank()) {
+                        Text("Tags", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
+                        Text(formatListString(r.extraCategories), modifier = Modifier.padding(top = 8.dp))
+                    }
+                    
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text("Nutrition", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
+                            Text("Calories: ${r.calories ?: 0}")
+                            Text("Protein: ${r.protein ?: 0.0}g")
+                            Text("Carbs: ${r.carbs ?: 0.0}g")
+                            Text("Fat: ${r.fat ?: 0.0}g")
+                        }
+                    }
                 }
             }
         }
 
-        Button(onClick = onBack, modifier = Modifier.padding(top = 16.dp)) { Text("Back") }
+        Button(onClick = onBack, modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) { Text("Back") }
     }
 }
 

@@ -17,6 +17,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.fitnessapp.data.ApiService
@@ -35,6 +39,30 @@ fun LoginScreen(onLoginSuccess: (Int) -> Unit) {
 
     val scope = rememberCoroutineScope()
 
+    fun doLogin() {
+        val api = ApiService.create("https://backend-45111119432.us-central1.run.app/")
+        scope.launch {
+            loading = true
+            error = null
+            val res = try {
+                withContext(Dispatchers.IO) {
+                    api.login(LoginRequest(email.trim(), password.trim()))
+                }
+            } catch (e: Exception) {
+                error = e.message
+                null
+            }
+            res?.let {
+                if (it.success && it.user != null) {
+                    onLoginSuccess(it.user.id)
+                } else {
+                    error = it.message
+                }
+            }
+            loading = false
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -44,15 +72,26 @@ fun LoginScreen(onLoginSuccess: (Int) -> Unit) {
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = { email = it.replace("\n", "") },
             label = { Text("Email") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
             modifier = Modifier.padding(top = 16.dp)
         )
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = { password = it.replace("\n", "") },
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(onDone = { if (!loading) doLogin() }),
             modifier = Modifier.padding(top = 8.dp)
         )
 
@@ -61,29 +100,7 @@ fun LoginScreen(onLoginSuccess: (Int) -> Unit) {
         }
 
         Button(
-            onClick = {
-                val api = ApiService.create("https://backend-45111119432.us-central1.run.app/")
-                scope.launch {
-                    loading = true
-                    error = null
-                    val res = try {
-                        withContext(Dispatchers.IO) {
-                            api.login(LoginRequest(email, password))
-                        }
-                    } catch (e: Exception) {
-                        error = e.message
-                        null
-                    }
-                    res?.let {
-                        if (it.success && it.user != null) {
-                            onLoginSuccess(it.user.id)
-                        } else {
-                            error = it.message
-                        }
-                    }
-                    loading = false
-                }
-            },
+            onClick = { if (!loading) doLogin() },
             modifier = Modifier.padding(top = 16.dp),
             enabled = !loading
         ) {

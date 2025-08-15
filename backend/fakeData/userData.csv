@@ -1,2 +1,2 @@
-id,name,email,weight_goal,password
-1,Migus Wong,migus.wong@gmail.com,lose,123 
+name,email,weight_goal,password
+Migus Wong,migus.wong@gmail.com,lose,123
