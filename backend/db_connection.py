@@ -230,3 +230,12 @@ def get_connection_info():
         'username': os.getenv('DB_USER'),
         'password_set': bool(os.getenv('DB_PASSWORD'))
     } 
+    
+    def with_conn(fn, max_retries=2):
+        for i in range(max_retries + 1):
+            try:
+                with get_db_connection() as conn, conn.cursor() as cur:
+                    return fn(conn, cur)
+            except OperationalError:
+                if i == max_retries: raise
+                time.sleep(0.5 * (i + 1))
