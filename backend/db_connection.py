@@ -1,7 +1,9 @@
 import psycopg2
 import os
+import time
 from dotenv import load_dotenv
 from urllib.parse import urlparse, parse_qs
+from psycopg2 import OperationalError
 
 # Load environment variables
 load_dotenv()
@@ -231,11 +233,11 @@ def get_connection_info():
         'password_set': bool(os.getenv('DB_PASSWORD'))
     } 
     
-    def with_conn(fn, max_retries=2):
-        for i in range(max_retries + 1):
-            try:
-                with get_db_connection() as conn, conn.cursor() as cur:
+def with_conn(fn, max_retries=2):
+    for i in range(max_retries + 1):
+        try:
+            with get_db_connection() as conn, conn.cursor() as cur:
                     return fn(conn, cur)
-            except OperationalError:
+        except OperationalError:
                 if i == max_retries: raise
                 time.sleep(0.5 * (i + 1))
