@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HealthHive Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --bee-yellow: #f7e1af;
+            --rounded: 20px;
+            --font: "Nunito", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: var(--font);
+            margin: 0;
+            padding: 0;
+        }
+
+        body,
+        html {
+            background-color: var(--bee-yellow);
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: var(--rounded);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 320px;
+            text-align: center;
+        }
+
+        .login-container img {
+            width: 100px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin-top: -30px;
+            margin-bottom: 10px;
+            font-size: 1.6rem;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: var(--rounded);
+        }
+
+        .button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--bee-yellow);
+            border: none;
+            border-radius: var(--rounded);
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #ffe58a;
+        }
+
+        .tagline {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 20px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 12px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background-color: #eee;
+            border: none;
+            border-radius: var(--rounded);
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .tab:hover {
+            background-color: #fce694;
+        }
+
+        .tab.active {
+            background-color: var(--bee-yellow);
+        }
+
+        .form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .form.hidden {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #biometricsCard.card {
+            background: #fff;
+            border-radius: var(--rounded);
+            padding: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            margin-top: 16px;
+        }
+
+        .bio-form .row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin: 10px 0;
+        }
+
+        .bio-form .inline {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .bio-form input,
+        .bio-form select,
+        .bio-form textarea {
+            border: 1px solid #ddd;
+            border-radius: var(--rounded);
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .bio-form .actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .status {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <img src="logo.png" alt="logo" style="width: 170px; height: auto; margin-top: -10px" />
+        <h2>Welcome to HealthHive!</h2>
+        <div class="tagline">Your sweet spot for fitness &amp; food</div>
+
+        <!-- Main action buttons -->
+        <div class="tab-buttons">
+            <button id="loginTab" class="tab" onclick="showForm('login')">Log In</button>
+            <button id="signupTab" class="tab" onclick="showForm('signup')">Create Account</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="form hidden">
+            <input id="loginEmail" type="email" placeholder="Email" required />
+            <input id="loginPassword" type="password" placeholder="Password" required />
+            <button class="button" type="submit">Log In</button>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signupForm" class="form hidden">
+            <input id="signupFirst" type="text" placeholder="First Name" required />
+            <input id="signupLast" type="text" placeholder="Last Name" required />
+            <input id="signupEmail" type="email" placeholder="Email" required />
+            <input id="signupPassword" type="password" placeholder="Password" required />
+            <button class="button" type="submit">Create Account</button>
+        </form>
+    </div>
+
+    <script>
+
+        const API_BASE = 'https://backend-45111119432.us-central1.run.app/';
+
+        (function guard() {
+            if (window.location.pathname.includes('login.html')) return;
+
+            const raw = localStorage.getItem('hh_session');
+            if (!raw) {
+                window.location.replace('login.html');
+                return;
+            }
+
+            try {
+                const sess = JSON.parse(raw);
+                const ageMs = Date.now() - (sess.ts || 0);
+                if (!sess?.email || ageMs > 7 * 24 * 60 * 60 * 1000) {
+                    localStorage.removeItem('hh_session');
+                    window.location.replace('login.html');
+                } else {
+                    window.CURRENT_USER = sess;
+                }
+            } catch {
+                localStorage.removeItem('hh_session');
+                window.location.replace('login.html');
+            }
+        })();
+
+        function showForm(type) {
+            const loginForm = document.getElementById("loginForm");
+            const signupForm = document.getElementById("signupForm");
+            const loginTab = document.getElementById("loginTab");
+            const signupTab = document.getElementById("signupTab");
+
+            loginForm.classList.add("hidden");
+            signupForm.classList.add("hidden");
+            loginTab.classList.remove("active");
+            signupTab.classList.remove("active");
+
+            if (type === "login") {
+                loginForm.classList.remove("hidden");
+                loginTab.classList.add("active");
+            } else {
+                signupForm.classList.remove("hidden");
+                signupTab.classList.add("active");
+            }
+        }
+
+        // ---- Session helper ----
+        function saveSession({ email, userId }) {
+            localStorage.setItem('hh_session', JSON.stringify({
+                email,
+                userId,
+                ts: Date.now()
+            }));
+        }
+
+        // ---- API helpers ----
+        async function apiLogin(email, password) {
+            const res = await fetch(`${API_BASE}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email.trim(), password })
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err?.error || `Login failed (${res.status})`);
+            }
+
+            return true;
+        }
+
+        async function userExistsByEmail(email) {
+            const res = await fetch(`${API_BASE}/users`);
+            if (!res.ok) return false;
+            const users = await res.json();
+            return (users || []).some(u => (u.email || '').toLowerCase() === email.toLowerCase());
+        }
+
+        function saveSession({ email, userId }) {
+            localStorage.setItem('hh_session', JSON.stringify({ email, userId, ts: Date.now() }));
+        }
+
+        async function apiCreateUser({ firstName, lastName, email, password }) {
+            const name = `${firstName} ${lastName}`.trim();
+            const payload = { name, email: email.trim(), password };
+
+            console.log("Sending user:", payload); // debug
+
+            const res = await fetch(`${API_BASE}/users`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const text = await res.text(); // log raw response text
+                console.error("❌ Server error response:", text);  // log exact error
+                throw new Error(`Signup failed (${res.status})`);
+            }
+
+            return res.json(); // returns created user
+        }
+        // ---- Form handlers ----
+        document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail')?.value.trim();
+            const password = document.getElementById('loginPassword')?.value;
+
+            try {
+                await apiLogin(email, password);
+
+                // extra guard: verify the user actually exists in DB
+                if (!(await userExistsByEmail(email))) {
+                    throw new Error('Invalid credentials: user not found.');
+                }
+
+                // fetch id so index can use it
+                const users = await fetch(`${API_BASE}/users`).then(r => r.json());
+                const me = users.find(u => (u.email || '').toLowerCase() === email.toLowerCase());
+
+                saveSession({ email, userId: me?.id ?? null });
+                location.href = 'index.html';
+            } catch (err) {
+                alert(err.message || 'Login failed');
+                console.error(err);
+            }
+        });
+
+        document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const firstName = document.getElementById('signupFirst')?.value.trim();
+            const lastName = document.getElementById('signupLast')?.value.trim();
+            const email = document.getElementById('signupEmail')?.value.trim();
+            const password = document.getElementById('signupPassword')?.value;
+
+            if (!firstName || !lastName || !email || !password) {
+                alert("Please fill out all fields.");
+                return;
+            }
+
+            try {
+                const created = await apiCreateUser({ firstName, lastName, email, password });
+                await apiLogin(email, password);
+                saveSession({ email, userId: created?.id ?? null });
+                location.href = 'index.html';
+            } catch (err) {
+                alert(err.message);
+                console.error(err);
+            }
+        });
+
+        // --- session helpers (we saved email in login.html) ---
+        function getSession() {
+            try { return JSON.parse(localStorage.getItem('hh_session') || '{ }'); }
+            catch { return {}; }
+        }
+
+        // Resolve current userId:
+        // - If we cached it already, use it.
+        // - Otherwise, fetch /users and match by email, cache id for next time.
+        async function getCurrentUserId() {
+            const sess = getSession();
+            if (!sess?.email) throw new Error('Not logged in');
+
+            if (sess.userId) return sess.userId;
+
+            const res = await fetch(`${API_BASE}/users`);
+            const users = await res.json();
+            const match = (users || []).find(u => (u.email || '').toLowerCase() === sess.email.toLowerCase());
+            if (match?.id != null) {
+                sess.userId = match.id;
+                localStorage.setItem('hh_session', JSON.stringify(sess));
+                return match.id;
+            }
+            throw new Error('User not found in /users');
+        }
+
+        // --- API calls for biometrics ---
+        async function fetchUserBiometricsLatest(userId) {
+            // /biometrics?user_id=... returns array; we’ll pick the latest by date
+            const res = await fetch(`${API_BASE}/biometrics?user_id=${encodeURIComponent(userId)}`);
+            if (!res.ok) throw new Error('Failed to fetch biometrics');
+            const list = await res.json();
+            if (!Array.isArray(list) || list.length === 0) return null;
+
+            // Sort by date descending (assuming ISO YYYY-MM-DD)
+            list.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            return list[0];
+        }
+
+        async function saveBiometrics(payload) {
+            const res = await fetch(`${API_BASE}/biometrics`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+                const txt = await res.text().catch(() => '');
+                throw new Error(txt || `Save failed (${res.status})`);
+            }
+            return res.json();
+        }
+
+        // --- UI helpers ---
+        function setBioStatus(msg, ok = true) {
+            const el = document.getElementById('bioStatus');
+            if (!el) return;
+            el.textContent = msg;
+            el.style.color = ok ? 'green' : 'crimson';
+            if (msg) {
+                setTimeout(() => { el.textContent = ''; }, 2500);
+            }
+        }
+
+        function fillBiometricsForm(bio) {
+            const today = new Date().toISOString().slice(0, 10);
+
+            document.getElementById('bioDate').value = bio?.date || today;
+            document.getElementById('bioWeight').value = bio?.weight ?? '';
+            document.getElementById('bioWeightUnits').value = bio?.weight_units || 'lb';
+            document.getElementById('bioAvgHr').value = bio?.avg_hr ?? '';
+            document.getElementById('bioHighHr').value = bio?.high_hr ?? '';
+            document.getElementById('bioLowHr').value = bio?.low_hr ?? '';
+            document.getElementById('bioNotes').value = bio?.notes ?? '';
+        }
+
+        async function initBiometricsUI() {
+            try {
+                const userId = await getCurrentUserId();
+                const latest = await fetchUserBiometricsLatest(userId);
+                fillBiometricsForm(latest);
+            } catch (e) {
+                console.error(e);
+                // still set defaults so user can save
+                fillBiometricsForm(null);
+            }
+        }
+
+        document.getElementById('biometricsForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const userId = await getCurrentUserId();
+
+                const payload = {
+                    user_id: userId,
+                    date: (document.getElementById('bioDate').value || '').trim(),  // required
+                    weight: document.getElementById('bioWeight').value ? Number(document.getElementById('bioWeight').value) : null,
+                    weight_units: (document.getElementById('bioWeightUnits').value || '').trim() || null,
+                    avg_hr: document.getElementById('bioAvgHr').value ? Number(document.getElementById('bioAvgHr').value) : null,
+                    high_hr: document.getElementById('bioHighHr').value ? Number(document.getElementById('bioHighHr').value) : null,
+                    low_hr: document.getElementById('bioLowHr').value ? Number(document.getElementById('bioLowHr').value) : null,
+                    notes: (document.getElementById('bioNotes').value || '').trim() || null
+                };
+
+                if (!payload.date) {
+                    setBioStatus('Please choose a date.', false);
+                    return;
+                }
+
+                // Per your API: one biometric per user per day (create or update)
+                await saveBiometrics(payload);
+                setBioStatus('Saved!');
+            } catch (err) {
+                console.error(err);
+                setBioStatus(err.message || 'Failed to save', false);
+            }
+        });
+
+        // Initialize when page loads; if you want to lazy-load on tab switch,
+        // call initBiometricsUI() from your showTab('fitness') path.
+        document.addEventListener('DOMContentLoaded', initBiometricsUI);
+
+        // If you have a showTab(tabId) function, you can also do:
+        // if (typeof showTab === 'function') {
+        //   const originalShowTab = showTab;
+        //   window.showTab = function(tabId) {
+        //     originalShowTab(tabId);
+        //     if (tabId === 'fitness') initBiometricsUI();
+        //   }
+        // }
+
+
+    </script>
+</body>
+
+
+</html>

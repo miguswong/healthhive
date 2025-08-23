@@ -1,0 +1,2250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<script>
+  (async function guardStrict() {
+    const KEY = 'hh_session';
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return location.replace('login.html');
+
+    try {
+      const sess = JSON.parse(raw);
+      const fresh = sess?.email && Number.isFinite(sess?.ts) &&
+        (Date.now() - sess.ts) < 7 * 24 * 60 * 60 * 1000;
+      if (!fresh) throw new Error('stale');
+
+      const res = await fetch('https://backend-45111119432.us-central1.run.app/users');
+      if (!res.ok) throw new Error('users fetch failed');
+      const users = await res.json();
+      const exists = (users || []).some(u => (u.email || '').toLowerCase() === sess.email.toLowerCase());
+      if (!exists) throw new Error('user missing');
+
+      window.CURRENT_USER = sess; // optional for greeting
+    } catch {
+      localStorage.removeItem(KEY);
+      location.replace('login.html');
+    }
+  })();
+</script>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealthHive Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bee-yellow: #f7e1afff;
+      --rounded: 20px;
+      --font: "Nunito", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: var(--font);
+      margin: 0;
+      padding: 0;
+    }
+
+    body,
+    html {
+      background-color: var(--bee-yellow);
+      /* overflow-x: hidden; */
+      scroll-behavior: smooth;
+    }
+
+    h2 {
+      text-align: center;
+      margin: 60px 0 20px;
+      font-size: 2rem;
+    }
+
+    .centered {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      transition: all 0.6s ease;
+    }
+
+    .button {
+      padding: 15px 30px;
+      border: none;
+      border-radius: var(--rounded);
+      background-color: #fff;
+      color: #333;
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: 0.3s;
+    }
+
+    .button:hover {
+      background-color: #ffe58a;
+    }
+
+    .intro {
+      margin-left: 40px;
+      margin-right: 40px;
+      margin-bottom: 20px;
+    }
+
+    .intro2 {
+      margin-left: 60px;
+      margin-right: 60px;
+      font-size: larger;
+      font-weight: bold;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      margin: 14px auto 24px auto;
+      padding: 20px;
+      background: #ffeaa5;
+      border-radius: var(--rounded);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      /* stays put while scrolling */
+      inset: 0;
+      z-index: 0;
+      /* behind your app content */
+      pointer-events: none;
+      /* never intercept clicks */
+      background:
+        url("/img/honeycomb-top-right.png") no-repeat right -40px top -20px / 420px,
+        url("/img/honeycomb-bottom-left.png") no-repeat left -60px bottom -40px / 360px;
+      opacity: 0.12;
+      /* overall fade for the PNGs */
+    }
+
+    #app,
+    main,
+    .page,
+    .container {
+      position: relative;
+      z-index: 1;
+    }
+
+    .honeycomb {
+      position: absolute;
+      z-index: -1;
+      opacity: 0.18;
+      width: 400px;
+      height: auto;
+      pointer-events: none;
+    }
+
+    .honeycomb-top-right {
+      top: 20%;
+      right: 20px;
+    }
+
+    .honeycomb-mid-left {
+      top: 80%;
+      left: -40px;
+      transform: translateY(-10%);
+    }
+
+    .tab-bar {
+      display: flex;
+      justify-content: space-around;
+      background-color: #fff;
+      padding: 10px;
+      border-bottom: 2px solid #ccc;
+      border-radius: 0 0 var(--rounded) var(--rounded);
+      transition: all 0.5s ease-in-out;
+    }
+
+    .tab-bar button {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    /* Anchor-style tabs for route-per-tab */
+    .tab-bar a {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      padding: 0;
+    }
+
+    .tab-bar [aria-selected="true"] {
+      font-weight: 600;
+    }
+
+    .content {
+      padding: 20px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .content.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .options-screen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
+      padding: 40px;
+      transition: all 0.5s ease-in-out;
+    }
+
+    .option-button {
+      width: 200px;
+      height: 200px;
+      border-radius: var(--rounded);
+      border: none;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    .option-button:hover {
+      transform: scale(1.05);
+    }
+
+    .option-button span {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 5px 10px;
+      border-radius: var(--rounded);
+      font-weight: bold;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .fade-zoom-out {
+      animation: fadeZoomOut 0.6s forwards;
+    }
+
+    .fade-zoom-in {
+      animation: fadeZoomIn 0.6s forwards;
+    }
+
+    @keyframes fadeZoomOut {
+      0% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.2);
+      }
+    }
+
+    @keyframes fadeZoomIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .team-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 20px 120px;
+      gap: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .team-member {
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      padding: 30px 20px;
+      border-radius: var(--rounded);
+      background-color: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.4s ease, opacity 0.4s ease,
+        background-color 0.4s ease;
+      opacity: 1;
+    }
+
+    .team-member img {
+      width: 100%;
+      max-width: 200px;
+      border-radius: 50%;
+    }
+
+    .team-member h3 {
+      margin-top: 15px;
+      font-size: 1.4rem;
+    }
+
+    .team-member .role-title {
+      font-weight: bold;
+      font-size: 1.05rem;
+      color: #444;
+      margin-top: 5px;
+    }
+
+    .team-member .role-description {
+      font-size: 0.95rem;
+      color: #333;
+      margin-top: 10px;
+    }
+
+    .team-member.active {
+      transform: scale(1.05);
+      background-color: rgba(255, 255, 255, 1);
+      opacity: 1;
+    }
+
+    .team-member.dimmed {
+      opacity: 0.4;
+    }
+
+    @media (max-width: 600px) {
+      .team-member {
+        padding: 25px 15px;
+      }
+
+      .team-member img {
+        max-width: 150px;
+      }
+    }
+
+    .bee-hero {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 14px auto 24px auto;
+      padding: 20px;
+      background: #fdfaf0;
+      border-radius: var(--rounded);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      max-width: 500px;
+    }
+
+    #beeHero.hidden {
+      display: none
+    }
+
+    .bee-logo {
+      width: 110px;
+      height: auto;
+      animation: beeFloat 3.2s ease-in-out infinite;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+    }
+
+    .bee-title {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .bee-title h2 {
+      margin-top: -8px;
+      font-size: 1.8rem;
+      margin-bottom: 6px;
+    }
+
+    .bee-title .tagline {
+      font-size: 0.95rem;
+      opacity: 0.8;
+    }
+
+    @keyframes beeFloat {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    .logoutBtn {
+      padding: 15px 30px;
+      border: none;
+      border-radius: var(--rounded);
+      background-color: #fff;
+      color: #333;
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: 0.3s;
+    }
+
+    .logoutBtn:hover {
+      background-color: #ffe58a;
+    }
+
+    .bio-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .bio-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    #biometricsCard.card,
+    #bioSummaryCard.card {
+      background: #fff;
+      border-radius: var(--rounded);
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      margin: 10px;
+    }
+
+    .bio-form .row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .bio-form .inline {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .bio-form input,
+    .bio-form select,
+    .bio-form textarea {
+      border: 1px solid #ddd;
+      border-radius: var(--rounded);
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    .bio-form .actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .status {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .bio-summary {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      column-gap: 12px;
+      row-gap: 8px;
+    }
+
+    .bio-summary .label {
+      opacity: .7;
+    }
+
+    .bio-summary.empty {
+      opacity: .6;
+      font-style: italic;
+    }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .history-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .button.small {
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: var(--rounded);
+    }
+
+    .button.outline {
+      background: transparent;
+      border: 1px solid #ccc;
+    }
+
+    .table-wrap {
+      max-height: 360px;
+      overflow: auto;
+      border: 1px solid #eee;
+      border-radius: var(--rounded);
+      margin-bottom: 40px;
+    }
+
+    .bio-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .bio-table thead th {
+      position: sticky;
+      top: 0;
+      background: #fafafa;
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .bio-table tbody td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #f2f2f2;
+      vertical-align: top;
+    }
+
+    .bio-table tbody tr:nth-child(odd) {
+      background: #fcfcfc;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 24px;
+      color: #666;
+      display: none;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    .bio-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .bio-right {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    #biometricsCard.card,
+    #bioSummaryCard.card,
+    #bioHistoryCard.card {
+      background: #fff;
+      border-radius: var(--rounded);
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .bio-form input,
+    .bio-form select,
+    .bio-form textarea {
+      border: 1px solid #ddd;
+      border-radius: var(--rounded);
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    .bio-form .actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .bio-form .span-2 {
+      grid-column: 1 / -1;
+    }
+
+    .status {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .history-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .button.small {
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: var(--rounded);
+    }
+
+    .button.outline {
+      background: transparent;
+      border: 1px solid #ccc;
+    }
+
+    .table-wrap {
+      max-height: 360px;
+      overflow: auto;
+      border: 1px solid #eee;
+      border-radius: var(--rounded);
+    }
+
+    .bio-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .bio-table thead th {
+      position: sticky;
+      top: 0;
+      background: #fafafa;
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .bio-table tbody td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #f2f2f2;
+      vertical-align: top;
+    }
+
+    .bio-table tbody tr:nth-child(odd) {
+      background: #fcfcfc;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 24px;
+      color: #666;
+      display: none;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    /* Responsive: stack under the form on smaller screens */
+    @media (max-width: 900px) {
+      .bio-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .bio-right {
+        order: 2;
+      }
+
+      .bio-left {
+        order: 1;
+      }
+
+      .bio-form {
+        grid-template-columns: 1fr;
+      }
+
+      .bio-form .span-2 {
+        grid-column: 1;
+      }
+    }
+
+    #bioHistoryCard .table-wrap {
+      max-height: 230px;
+    }
+
+    #bioHistoryCard .bio-table thead th {
+      padding: 8px;
+    }
+
+    #bioHistoryCard .bio-table tbody td {
+      padding: 6px 8px;
+    }
+
+    #bioHistoryCard .bio-table {
+      font-size: 13px;
+    }
+
+    @media (max-width: 1200px) {
+      #bioHistoryCard .table-wrap {
+        max-height: 220px;
+      }
+    }
+
+    .recipes-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .recipes-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .recipes-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      white-space: nowrap;
+    }
+
+    :root {
+      --ctl-h: 40px;
+    }
+
+    #recipesDate {
+      display: inline-flex;
+      align-items: center;
+      block-size: var(--ctl-h);
+      padding: 0 14px;
+      border: 1px solid #eee;
+      border-radius: var(--rounded);
+      background: #fff;
+      font-size: 0.95rem;
+    }
+
+    .recipes-actions .button.regen {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      block-size: var(--ctl-h);
+      padding: 0 16px;
+      line-height: 1;
+      position: relative;
+      top: -9px;
+    }
+
+    :root {
+      --ctl-h: 36px;
+    }
+
+    .recipes-actions select.recipes-filter {
+      display: inline-flex;
+      align-items: center;
+      block-size: var(--ctl-h);
+      padding: 0 36px 0 14px;
+      border-radius: var(--rounded);
+      font-size: 0.95rem;
+      line-height: normal;
+    }
+
+    .recipes-actions #recipesDate {
+      display: inline-flex;
+      align-items: center;
+      height: var(--ctl-h);
+      padding: 0 12px;
+      border: 1px solid #eee;
+      border-radius: var(--rounded);
+      background: #fff;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 560px) {
+      .recipes-actions {
+        grid-template-columns: 1fr 1fr;
+        row-gap: 8px;
+      }
+
+      #recipesFilter {
+        grid-column: 1 / -1;
+        justify-self: stretch;
+      }
+
+      .button.regen {
+        justify-self: end;
+      }
+    }
+
+    .recipes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .recipe-card {
+      border: 1px solid #eee;
+      background-color: white;
+      border-radius: var(--rounded);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .recipe-card.is-removing {
+      opacity: 0;
+      transform: scale(.98);
+    }
+
+
+    .recipe-card h4 {
+      margin: 0;
+    }
+
+    .recipe-meta {
+      font-size: 13px;
+      opacity: .8;
+    }
+
+    .recipe-section-title {
+      font-weight: 600;
+      font-size: 14px;
+      opacity: .9;
+      margin-top: 6px;
+    }
+
+    .recipe-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .recipe-list li {
+      margin: 2px 0;
+    }
+
+    #dailyRecipesEmpty {
+      display: none;
+      text-align: center;
+      padding: 18px;
+      color: #666;
+    }
+
+    @media (max-width: 1000px) {
+      .recipes-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .recipes-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .recipes-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .recipes-layout {
+      display: block;
+    }
+
+    .recipes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    @media (max-width: 1000px) {
+      .recipes-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .recipes-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .recipes-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .recipes-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .recipe-card {
+      position: relative;
+      border: 1px solid #eee;
+      border-radius: var(--rounded);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      animation: fadeUp .5s ease both;
+      /* stagger provided inline via --delay */
+      animation-delay: var(--delay, 0ms);
+    }
+
+    .recipe-card h4 {
+      margin: 0;
+    }
+
+    .recipe-meta {
+      font-size: 13px;
+      opacity: .8;
+    }
+
+    .recipe-section-title {
+      font-weight: 600;
+      font-size: 14px;
+      opacity: .9;
+      margin-top: 6px;
+    }
+
+    .recipe-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .recipe-list li {
+      margin: 2px 0;
+    }
+
+    /* Heart (favorite) button */
+    .fav-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: #ffffffcc;
+      border: 1px solid #e5e7eb;
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .fav-btn:hover {
+      transform: scale(1.06);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, .06);
+    }
+
+    .fav-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: #9ca3af;
+      stroke-width: 2;
+      transition: fill .15s, stroke .15s;
+    }
+
+    .fav-btn[aria-pressed="true"] svg {
+      fill: #e11d48;
+      stroke: #e11d48;
+    }
+
+    .chat-box {
+      border: 1px solid #eee;
+      border-radius: var(--rounded);
+      padding: 10px;
+      max-height: 420px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chat-msg {
+      padding: 8px 10px;
+      border-radius: var(--rounded);
+      max-width: 100%;
+    }
+
+    .chat-user {
+      background: #f2f6ff;
+      align-self: flex-end;
+    }
+
+    .chat-bot {
+      background: #fafafa;
+      align-self: flex-start;
+    }
+
+    .chat-form {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .chat-form input {
+      flex: 1;
+      border: 1px solid #ddd;
+      border-radius: var(--rounded);
+      padding: 10px;
+    }
+
+    .button.small {
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: var(--rounded);
+    }
+
+    .button.outline {
+      background: transparent;
+      border: 1px solid #ccc;
+    }
+
+    #dailyRecipesEmpty {
+      display: none;
+      text-align: center;
+      padding: 18px;
+      color: #666;
+    }
+
+    .button.regen {
+      padding: 8px 15px;
+      border: none;
+      border-radius: var(--rounded);
+      background-color: #fff;
+      color: #333;
+      font-size: .8rem;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: 0.3s;
+    }
+
+    .button.regen:hover {
+      background-color: #ffe58a;
+    }
+
+    .button.generate {
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--rounded);
+      background-color: #fff;
+      color: #333;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: 0.3s;
+    }
+
+    .button.generate:hover {
+      background-color: #ffe58a;
+    }
+
+    .recipes-filter {
+      border: 1px solid #ddd;
+      border-radius: var(--rounded);
+      padding: 6px 8px;
+      font-size: 13px;
+      background: #fff;
+    }
+
+    #settingsProfileCard.card {
+      background: #fff;
+      border-radius: var(--rounded);
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 8px 12px;
+      margin-top: 8px;
+      align-items: center;
+    }
+
+    .kv dt {
+      opacity: .7;
+    }
+
+    .kv dd {
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Home Screen -->
+  <div id="home" class="fade-zoom-in">
+    <nav class="tab-bar" role="tablist" aria-label="App sections">
+      <a href="#/tutorial" role="tab" data-tab="tutorial">Home</a>
+      <a href="#/options" role="tab" data-tab="options">Fitness &amp; Food Trackers</a>
+      <a href="#/recipes" role="tab" data-tab="tab3">Today&apos;s Recipes For You</a>
+      <a href="#/full" role="tab" data-tab="tab4">Full Recipe List</a>
+      <a href="#/about" role="tab" data-tab="tab5">About Us</a>
+      <a href="#/settings" role="tab" data-tab="tab6">Settings</a>
+    </nav>
+    <div class="bee-hero" id="beeHero">
+      <img src="bee2.png" alt="Bee mascot" class="bee-logo" />
+      <div class="bee-title">
+        <h2>Welcome to HealthHive!</h2>
+        <div class="tagline">Your sweet spot for fitness &amp; food.</div>
+      </div>
+    </div>
+
+    <div id="tutorial" class="content active">
+      <p class="intro">
+        At HealthHive, our mission is simple: to empower individuals from all
+        walks of life to take control of their well-being by unifying their
+        health, fitness, and nutrition data into one intuitive platform. We
+        are a diverse team of scientists, analysts, and data experts, but
+        above all, we are people who understand the real-world challenges of
+        staying healthy. Whether you're managing your diet, tracking your
+        workouts, or simply trying to build better habits, we know that health
+        isn't one-size-fits-all
+      </p>
+      <p class="intro">
+        That’s why we built HealthHive – to make tracking your health easier,
+        more connected, and more human. With everything in one place, you can
+        see the full picture of your wellness journey and make informed
+        decisions that help you thrive. By integrating with popular
+        third-party platforms, HealthHive brings all your essential data
+        together in one place, giving you the complete picture you need to
+        make informed decisions and reach your goals based on analytics data
+        that would not be possible in siloed applications.
+      </p>
+      <p class="intro2">
+        Introducing HealthHive, an all-in-one solution intended to allow users
+        to track athletic data and dietary decisions all in the same digital
+        platform. This unique approach to a health application allows users to
+        take data from multiple sources and integrate them into a single
+        account allowing users to uncover hidden trends and analytics that
+        would not otherwise be possible.
+      </p>
+    </div>
+
+    <div id="options" class="content hidden">
+      <div class="options-screen">
+        <button class="option-button" style="background-image: url('fitness.png')" onclick="showTab('fitness')">
+          <span>Fitness</span>
+        </button>
+        <button class="option-button" style="background-image: url('food.png')" onclick="showTab('food')">
+          <span>Food</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="fitness" class="content hidden">
+      <h2>Your Fitness Journey</h2>
+      <div id="biometricsSection" class="bio-grid">
+        <div class="bio-left">
+          <div id="biometricsCard" class="card">
+            <h3>Biometrics</h3>
+
+            <form id="biometricsForm" class="bio-form" novalidate>
+              <div class="row">
+                <label for="bioDate">Date</label>
+                <input id="bioDate" type="date" required />
+              </div>
+
+              <div class="row">
+                <label for="bioWeight">Weight</label>
+                <div class="inline">
+                  <input id="bioWeight" type="number" step="0.1" placeholder="e.g., 170.5" />
+                  <select id="bioWeightUnits">
+                    <option value="lb">lb</option>
+                    <option value="kg">kg</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <label for="bioAvgHr">Avg HR</label>
+                <input id="bioAvgHr" type="number" step="1" placeholder="e.g., 62" />
+              </div>
+
+              <div class="row">
+                <label for="bioHighHr">High HR</label>
+                <input id="bioHighHr" type="number" step="1" placeholder="e.g., 172" />
+              </div>
+
+              <div class="row">
+                <label for="bioLowHr">Low HR</label>
+                <input id="bioLowHr" type="number" step="1" placeholder="e.g., 48" />
+              </div>
+
+              <div class="row span-2">
+                <label for="bioNotes">Notes</label>
+                <textarea id="bioNotes" rows="3" placeholder="Optional notes"></textarea>
+              </div>
+
+              <div class="actions span-2">
+                <button id="bioSaveBtn" type="submit" class="button">Save Biometrics</button>
+                <span id="bioStatus" class="status"></span>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <aside class="bio-right">
+          <div id="bioSummaryCard" class="card">
+            <h3>Latest Saved</h3>
+            <div id="bioLastSaved" style="opacity:.7;margin-bottom:8px;margin-right:20px;margin-left:20px;"></div>
+            <div id="bioSummary" class="bio-summary empty"
+              style="margin-bottom:8px;margin-right:20px;margin-left:20px;">Nothing saved yet.</div>
+          </div>
+
+          <div id="bioHistoryCard" class="card">
+            <div class="history-header">
+              <h3>Biometrics History</h3>
+              <div class="history-actions">
+                <label for="bioFrom" class="sr-only">From</label>
+                <input id="bioFrom" type="date">
+                <span style="opacity:.7;">to</span>
+                <label for="bioTo" class="sr-only">To</label>
+                <input id="bioTo" type="date">
+                <button id="bioFilterBtn" class="button small" type="button">Filter</button>
+                <button id="bioClearBtn" class="button small outline" type="button">Clear</button>
+                <button id="bioExportBtn" class="button small outline" type="button">Export CSV</button>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table id="bioTable" class="bio-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Weight</th>
+                    <th>Avg HR</th>
+                    <th>High HR</th>
+                    <th>Low HR</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+              <div id="bioEmpty" class="empty-state">No biometrics yet.</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <iframe src="https://public.tableau.com/views/HealthHiveRecipes/ExerciseOutput?:showVizHome=no&:embed=true"
+        width="100%" height="600" style="border-radius: var(--rounded); border: none"></iframe>
+      <iframe src="https://public.tableau.com/views/HealthHiveRecipes/MaxDistancebyWeek?:showVizHome=no&:embed=true"
+        width="100%" height="720" style="border-radius: var(--rounded); border: none" frameborder="0"
+        allowfullscreen></iframe>
+      <iframe src="https://public.tableau.com/views/HealthHiveRecipes/TotalDistancebyWeek?:showVizHome=no&:embed=true"
+        width="100%" height="720" style="border-radius: var(--rounded); border: none" frameborder="0" allowfullscreen>
+      </iframe>
+
+      <iframe src="https://public.tableau.com/views/HealthHiveRecipes/AveDistance?:showVizHome=no&:embed=true"
+        width="100%" height="720" style="border-radius: var(--rounded); border: none" frameborder="0" allowfullscreen>
+      </iframe>
+
+    </div>
+
+    <div id="food" class="content hidden">
+      <h2>Nutritional Tracker</h2>
+      <iframe
+        src="https://public.tableau.com/views/HealthHiveDashboard/DailyValues?:embed=true&:display_count=n&:showVizHome=no"
+        width="100%" height="600" style="border-radius: var(--rounded); border: none"></iframe>
+    </div>
+
+    <div id="tab3" class="content hidden">
+      <div class="recipes-layout">
+        <!-- Daily recipes -->
+        <section class="card" id="dailyRecipesCard">
+          <div class="recipes-header">
+            <h3>Today’s Recipes For You</h3>
+            <div class="recipes-actions">
+              <small id="recipesDate"></small>
+
+              <select id="recipesFilter" class="recipes-filter">
+                <option value="all">All</option>
+                <option value="favorites">Favorites</option>
+              </select>
+
+              <button id="regenRecipesBtn" class="button regen outline" type="button" title="Regenerate today’s picks"
+                onclick="regenDailyRecipes()">Regenerate</button>
+            </div>
+          </div>
+
+          <div id="dailyRecipesGrid" class="recipes-grid"></div>
+          <div id="dailyRecipesEmpty" class="empty-state">No recipes yet.</div>
+        </section>
+
+        <!-- Chat Recipe Generator -->
+        <section class="card" id="recipeChatCard" style="margin-top:16px;">
+          <h3>Ask for a Recipe</h3>
+          <div id="recipeChat" class="chat-box"></div>
+          <form id="recipeChatForm" class="chat-form" novalidate>
+            <input id="recipePrompt" type="text" placeholder="e.g., high-protein vegetarian dinner under 30 minutes" />
+            <button id="askRecipeBtn" class="button generate" type="submit">Generate</button>
+          </form>
+        </section>
+      </div>
+    </div>
+    <div id="tab4" class="content hidden">
+      <h2>Full Recipe List</h2>
+      <p>Search for a specific recipe here!</p>
+      <iframe
+        src="https://public.tableau.com/views/HealthHiveDashboard/Recipes?:embed=true&:display_count=n&:showVizHome=no"
+        width="100%" height="600" style="border-radius: var(--rounded); border: none"></iframe>
+    </div>
+    <div id="tab5" class="content hidden">
+      <h2>Meet the HealthHive Team</h2>
+      <div class="team-container" id="teamContainer">
+        <div class="team-member">
+          <img src="headshot1.png" alt="Yemi Adetutu" />
+          <h3>Yemi Adetutu</h3>
+          <p class="role-title">Data Modeling Specialist</p>
+          <p class="role-description">
+            Data Analytics Manager with 10+ years’ experience in advanced
+            analytics and machine learning to drive business insights,
+            compliance, and risk across industries. B.S. Mathematics &
+            Statistics, Florida State University
+          </p>
+        </div>
+
+        <div class="team-member">
+          <img src="headshot2.png" alt="Maddy Lok" />
+          <h3>Maddy Lok</h3>
+          <p class="role-title">Senior Data Engineer</p>
+          <p class="role-description">
+            Data Analyst at a marketing and creative agency with experience in
+            social listening tools, custom dashboarding, and data engineering.
+            B.S. Biochemistry and Bioethics, Loyola University Chicago
+          </p>
+        </div>
+
+        <div class="team-member">
+          <img src="headshot3.png" alt="Aderus Milan" />
+          <h3>Aderus Milan</h3>
+          <p class="role-title">Communications Specialist</p>
+          <p class="role-description">
+            Project Manager, Director, and Business Intelligence Analyst with
+            experience in both public and private sectors. B.A. Communications
+            (Media Studies and Theater), University of Washington. M.S. in
+            Project Management, MPS in Analytics, Northeastern University
+          </p>
+        </div>
+
+        <div class="team-member">
+          <img src="headshot4.png" alt="Julia O'Keeffe" />
+          <h3>Julia O'Keeffe</h3>
+          <p class="role-title">Visualization and Dashboard Developer</p>
+          <p class="role-description">
+            Pricing and Promotion Analyst in CPG, with experience in analytics
+            and dashboarding. B.S. Mathematics and Psychology, Washington
+            University in St. Louis
+          </p>
+        </div>
+
+        <div class="team-member">
+          <img src="headshot5.png" alt="Migus Wong" />
+          <h3>Migus Wong</h3>
+          <p class="role-title">Technical Project Manager</p>
+          <p class="role-description">
+            Technical Implementation Specialist at a Healthcare Technology
+            startup specializing in back-office process automation. B.S.
+            Chemical Engineering, Colorado School of Mines
+          </p>
+        </div>
+      </div>
+    </div>
+    <div id="tab6" class="content hidden">
+      <section class="card" id="settingsProfileCard">
+        <h3>Account</h3>
+        <dl class="kv">
+          <dt>Name</dt>
+          <dd id="settingsName">—</dd>
+          <dt>Email</dt>
+          <dd id="settingsEmail">—</dd>
+        </dl>
+        <div id="settingsStatus" class="status"></div>
+      </section>
+      <button class="logoutBtn" id="logoutBtn">Log Out</button>
+    </div>
+  </div>
+  <img src="honeycomb.png" alt="Honeycomb" class="honeycomb honeycomb-top-right" />
+  <img src="honeycomb.png" alt="Honeycomb" class="honeycomb honeycomb-mid-left" />
+
+  </div>
+
+  <script>
+    let _bioHandlersBound = false;
+    function ensureBioHandlers() {
+      if (_bioHandlersBound) return;
+      if (typeof bindBiometricsHandlers === 'function') bindBiometricsHandlers();
+      _bioHandlersBound = true;
+    }
+
+    let _bioHistoryBound = false;
+    function ensureBioHistoryButtons() {
+      if (_bioHistoryBound) return;
+      if (typeof bindBioHistoryButtons === 'function') bindBioHistoryButtons();
+      _bioHistoryBound = true;
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll("#home .content").forEach((el) => {
+        el.classList.add("hidden");
+        el.classList.remove("active");
+      });
+
+      const target = document.getElementById(tabId);
+      if (!target) { console.warn('No tab with id', tabId); return; }
+      target.classList.remove("hidden");
+      void target.offsetWidth;
+      target.classList.add("active");
+
+      const beeHero = document.getElementById("beeHero");
+      if (tabId === "tutorial") {
+        beeHero.classList.remove("hidden");
+      } else {
+        beeHero.classList.add("hidden");
+      }
+
+      if (tabId === "fitness") {
+        ensureBioHandlers();
+        ensureBioHistoryButtons();
+        if (typeof initBiometricsUI === 'function') initBiometricsUI();
+        if (typeof initBiometricsHistory === 'function') initBiometricsHistory();
+      }
+      if (tabId === "tab3" || tabId === "recipes") {
+        initRecipesTab();
+      }
+      if (tabId === 'settings' || tabId === 'tab6') {
+        initSettingsTab();
+      }
+    }
+    // ---- Simple hash router: map routes to tab IDs and keep URL in sync ----
+    (function setupRouter() {
+      const routeToTab = {
+        '/tutorial': 'tutorial',
+        '/options': 'options',
+        '/recipes': 'tab3',
+        '/full': 'tab4',
+        '/about': 'tab5',
+        '/settings': 'tab6'
+      };
+
+      function currentPath() {
+        const h = location.hash || '';
+        const path = h.startsWith('#') ? h.slice(1) : h;
+        return path || '/tutorial';
+      }
+
+      function updateAriaSelected(path) {
+        document.querySelectorAll('.tab-bar [role="tab"]').forEach(a => {
+          const isActive = a.getAttribute('href') === '#' + path;
+          a.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+      }
+
+      function router() {
+        const path = currentPath();
+        const tabId = routeToTab[path] || 'tutorial';
+        showTab(tabId);
+        updateAriaSelected(path);
+      }
+
+      window.addEventListener('hashchange', router);
+      window.addEventListener('DOMContentLoaded', router);
+
+      // If buttons elsewhere still call showTab(), also push to hash for deep-linking:
+      window.navigateTo = function (tabId) {
+        const entry = Object.entries(routeToTab).find(([, id]) => id === tabId);
+        const path = entry ? entry[0] : '/tutorial';
+        if (location.hash !== '#' + path) {
+          location.hash = path;
+        } else {
+          router();
+        }
+      };
+    })();
+
+
+
+    const container = document.getElementById("teamContainer");
+    const members = container.querySelectorAll(".team-member");
+
+    function updateActiveMember() {
+      let closest = null;
+      let minDistance = Infinity;
+      const centerY = window.innerHeight / 2;
+
+      members.forEach((member) => {
+        const rect = member.getBoundingClientRect();
+        const memberCenter = rect.top + rect.height / 2;
+        const distance = Math.abs(centerY - memberCenter);
+
+        if (
+          distance < minDistance &&
+          rect.top < window.innerHeight &&
+          rect.bottom > 0
+        ) {
+          minDistance = distance;
+          closest = member;
+        }
+      });
+
+      members.forEach((member) => {
+        member.classList.remove("active", "dimmed");
+      });
+
+      if (closest) {
+        members.forEach((member) => {
+          if (member !== closest) {
+            member.classList.add("dimmed");
+          }
+        });
+        closest.classList.add("active");
+      }
+    }
+
+    window.addEventListener("scroll", updateActiveMember);
+    window.addEventListener("resize", updateActiveMember);
+    window.addEventListener("load", updateActiveMember);
+
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+      localStorage.removeItem('hh_session');
+      window.location.replace('login.html');
+    });
+
+    const API_BASE = 'https://backend-45111119432.us-central1.run.app';
+
+    function getSession() {
+      try { return JSON.parse(localStorage.getItem('hh_session') || '{}'); }
+      catch { return {}; }
+    }
+
+    async function getCurrentUserId() {
+      const sess = getSession();
+      if (!sess?.email) throw new Error('Not logged in');
+      if (sess.userId) return sess.userId;
+
+      const res = await fetch(`${API_BASE}/users`);
+      const users = await res.json();
+      const me = (users || []).find(u => (u.email || '').toLowerCase() === sess.email.toLowerCase());
+      if (!me?.id) throw new Error('User not found');
+      sess.userId = me.id;
+      localStorage.setItem('hh_session', JSON.stringify(sess));
+      return me.id;
+    }
+
+    async function fetchUserBiometricsLatest(userId) {
+      const res = await fetch(`${API_BASE}/biometrics?user_id=${encodeURIComponent(userId)}`);
+      if (!res.ok) throw new Error('Failed to fetch biometrics');
+      const list = await res.json();
+      if (!Array.isArray(list) || list.length === 0) return null;
+      list.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      return list[0];
+    }
+
+    async function saveBiometrics(payload) {
+      const res = await fetch(`${API_BASE}/biometrics`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        const txt = await res.text().catch(() => '');
+        throw new Error(txt || `Save failed (${res.status})`);
+      }
+      return res.json();
+    }
+
+    function setBioStatus(msg, ok = true) {
+      const el = document.getElementById('bioStatus');
+      if (!el) return;
+      el.textContent = msg || '';
+      el.style.color = ok ? 'green' : 'crimson';
+      if (msg) setTimeout(() => { el.textContent = ''; }, 2500);
+    }
+
+    function fillBiometricsForm(bio) {
+      const today = new Date().toISOString().slice(0, 10);
+      document.getElementById('bioDate').value = bio?.date || today;
+      document.getElementById('bioWeight').value = bio?.weight ?? '';
+      document.getElementById('bioWeightUnits').value = bio?.weight_units || 'lb';
+      document.getElementById('bioAvgHr').value = bio?.avg_hr ?? '';
+      document.getElementById('bioHighHr').value = bio?.high_hr ?? '';
+      document.getElementById('bioLowHr').value = bio?.low_hr ?? '';
+      document.getElementById('bioNotes').value = bio?.notes ?? '';
+    }
+
+    function showLastSaved(text) {
+      const el = document.getElementById('bioLastSaved');
+      if (el) el.textContent = text ? `Last saved: ${text}` : '';
+    }
+
+    function renderBioSummary(bio) {
+      const box = document.getElementById('bioSummary');
+      if (!box) return;
+      if (!bio) {
+        box.classList.add('empty');
+        box.innerHTML = 'Nothing saved yet.';
+        showLastSaved('');
+        return;
+      }
+      box.classList.remove('empty');
+      const fmt = (v, u = '') => (v == null || v === '') ? '—' : `${v}${u}`;
+      box.innerHTML = `
+      <div class="label">Date</div><div>${bio.date || '—'}</div>
+      <div class="label">Weight</div><div>${fmt(bio.weight, bio.weight_units ? ' ' + bio.weight_units : '')}</div>
+      <div class="label">Avg HR</div><div>${fmt(bio.avg_hr)}</div>
+      <div class="label">High HR</div><div>${fmt(bio.high_hr)}</div>
+      <div class="label">Low HR</div><div>${fmt(bio.low_hr)}</div>
+      <div class="label">Notes</div><div>${bio.notes ? bio.notes : '—'}</div>
+    `;
+      showLastSaved(bio.created_at || bio.date || new Date().toLocaleString());
+    }
+
+    async function initBiometricsUI() {
+      try {
+        const userId = await getCurrentUserId();
+        const latest = await fetchUserBiometricsLatest(userId);
+        fillBiometricsForm(latest);
+        renderBioSummary(latest);
+      } catch (e) {
+        console.error(e);
+        fillBiometricsForm(null);
+        renderBioSummary(null);
+      }
+    }
+
+    function bindBiometricsHandlers() {
+      const form = document.getElementById('biometricsForm');
+      if (!form) return;
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        try {
+          const userId = await getCurrentUserId();
+          const payload = {
+            user_id: userId,
+            date: (document.getElementById('bioDate').value || '').trim(),  // required by API
+            weight: document.getElementById('bioWeight').value ? Number(document.getElementById('bioWeight').value) : null,
+            weight_units: (document.getElementById('bioWeightUnits').value || '').trim() || null,
+            avg_hr: document.getElementById('bioAvgHr').value ? Number(document.getElementById('bioAvgHr').value) : null,
+            high_hr: document.getElementById('bioHighHr').value ? Number(document.getElementById('bioHighHr').value) : null,
+            low_hr: document.getElementById('bioLowHr').value ? Number(document.getElementById('bioLowHr').value) : null,
+            notes: (document.getElementById('bioNotes').value || '').trim() || null
+          };
+
+          if (!payload.date) {
+            setBioStatus('Please choose a date.', false);
+            return;
+          }
+
+          await saveBiometrics(payload);
+          setBioStatus('Saved!');
+
+          const latest = await fetchUserBiometricsLatest(userId);
+          fillBiometricsForm(latest);
+          renderBioSummary(latest);
+        } catch (err) {
+          console.error(err);
+          setBioStatus(err.message || 'Failed to save', false);
+        }
+      });
+    }
+
+    // document.addEventListener('DOMContentLoaded', () => {
+    //   bindBiometricsHandlers();
+    //   initBiometricsUI();
+    // });
+
+    let BIO_ALL = [];
+
+    async function fetchUserBiometricsAll(userId) {
+      const res = await fetch(`${API_BASE}/biometrics?user_id=${encodeURIComponent(userId)}`);
+      if (!res.ok) throw new Error('Failed to fetch biometrics');
+      const list = await res.json();
+      const norm = (list || []).map(r => ({
+        ...r,
+        date: r.date || '',
+        weight_units: r.weight_units || '',
+        notes: r.notes || ''
+      }));
+      norm.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      return norm;
+    }
+
+    function applyHistoryFilter(rows) {
+      const from = document.getElementById('bioFrom')?.value || '';
+      const to = document.getElementById('bioTo')?.value || '';
+      if (!from && !to) return rows;
+
+      return rows.filter(r => {
+        if (!r.date) return false;
+        if (from && r.date < from) return false;
+        if (to && r.date > to) return false;
+        return true;
+      });
+    }
+
+    function renderBioHistory(rows) {
+      const tbody = document.querySelector('#bioTable tbody');
+      const empty = document.getElementById('bioEmpty');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+
+      if (!rows || rows.length === 0) {
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+
+      for (const r of rows) {
+        const tr = document.createElement('tr');
+        const weightCell = (r.weight == null || r.weight === '') ? '—' : `${r.weight}${r.weight_units ? ' ' + r.weight_units : ''}`;
+
+        tr.innerHTML = `
+        <td>${r.date || '—'}</td>
+        <td>${weightCell}</td>
+        <td>${r.avg_hr ?? '—'}</td>
+        <td>${r.high_hr ?? '—'}</td>
+        <td>${r.low_hr ?? '—'}</td>
+        <td>${r.notes ? escapeHtml(r.notes) : '—'}</td>
+      `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function refreshBioHistoryUI() {
+      const filtered = applyHistoryFilter(BIO_ALL);
+      renderBioHistory(filtered);
+    }
+
+    function exportBioCSV() {
+      if (!BIO_ALL.length) return;
+      const rows = applyHistoryFilter(BIO_ALL);
+      const headers = ['date', 'weight', 'weight_units', 'avg_hr', 'high_hr', 'low_hr', 'notes'];
+      const csv = [
+        headers.join(','),
+        ...rows.map(r => headers.map(h => csvCell(r[h])).join(','))
+      ].join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `biometrics_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      a.remove();
+    }
+
+    function csvCell(v) {
+      if (v == null) return '';
+      const s = String(v);
+      if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    }
+
+    function bindBioHistoryButtons() {
+      document.getElementById('bioFilterBtn')?.addEventListener('click', refreshBioHistoryUI);
+      document.getElementById('bioClearBtn')?.addEventListener('click', () => {
+        const from = document.getElementById('bioFrom');
+        const to = document.getElementById('bioTo');
+        if (from) from.value = '';
+        if (to) to.value = '';
+        refreshBioHistoryUI();
+      });
+      document.getElementById('bioExportBtn')?.addEventListener('click', exportBioCSV);
+    }
+
+    async function initBiometricsHistory() {
+      try {
+        const userId = await getCurrentUserId();
+        BIO_ALL = await fetchUserBiometricsAll(userId);
+        refreshBioHistoryUI();
+      } catch (e) {
+        console.error('History load failed:', e);
+        BIO_ALL = [];
+        refreshBioHistoryUI();
+      }
+    }
+
+    function normalizeList(val) {
+      if (Array.isArray(val)) return val.map(cleanListItem).filter(Boolean);
+      if (typeof val === 'string') {
+        let s = val.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+        if (/^\s*\[.*\]\s*$/.test(s)) {
+          s = s.slice(1, -1);
+          return s.split(/,\s*/).map(x => x.replace(/^['"]|['"]$/g, '')).map(cleanListItem).filter(Boolean);
+        }
+        let lines = s.split(/\r?\n+/).map(cleanListItem).filter(Boolean);
+        if (lines.length <= 1) lines = s.split(/(?:\.\s+|;\s+|\n+)/).map(cleanListItem).filter(Boolean);
+        return lines;
+      }
+      return [];
+    }
+    function cleanListItem(x) {
+      return String(x)
+        .replace(/^[-•\s]+/, '')
+        .replace(/^\s*\d+\s*[\)\.\-:]\s*/, '')
+        .replace(/^\s*['"\[]+|\s*['"\]]+$/g, '')
+        .trim();
+    }
+    function condenseSteps(items) {
+      const out = []; for (let i = 0; i < items.length; i++) {
+        let cur = items[i]; if (!cur) continue;
+        if (!out.length) { out.push(cur); continue; }
+        let prev = out[out.length - 1];
+        const prevEnd = /[.!?]$/.test(prev), curLower = /^[a-z\u00C0-\u024F]/.test(cur),
+          cont = /^(then|and|or|until|to|with|into|onto|over|for|by|in|on|off|after|before|while|when)\b/i.test(cur),
+          prevFrag = prev.length <= 30 && !prevEnd;
+        if (!prevEnd && (curLower || cont || prevFrag)) {
+          let connector = ' '; if (/^(in|while|when|as)\b/i.test(prev)) connector = ', '; if (/[,:;]$/.test(prev)) connector = ' ';
+          out[out.length - 1] = (prev.trim() + connector + cur.trim());
+        } else out.push(cur);
+      } return out;
+    }
+    function punctuate(s) { s = s.trim(); if (!s) return s; const f = s.charAt(0); if (/[a-z\u00C0-\u024F]/.test(f)) s = f.toUpperCase() + s.slice(1); if (!/[.!?]$/.test(s)) s += '.'; return s; }
+    function startsLikeQuantity(s) {
+      return /^\s*(?:\d+(?:[./]\d+)?|[¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])(?:\s*(?:cup|cups|tbsp|tablespoons?|tsp|teaspoons?|oz|ounces?|lb|pounds?|g|grams?|kg|kilograms?|ml|milliliters?|l|liters?|cloves?|slices?|cans?|packages?|sticks?|heads?|bunch(?:es)?))?\b/i.test(s);
+    }
+    function isDescriptorOnly(s) {
+      return /^(cooked|uncooked|chilled|warmed|drained|rinsed|patted dry|chopped|diced|minced|sliced|thinly sliced|finely sliced|roughly sliced|peeled|grated|shredded|halved|quartered|seeded|de[-\s]?seeded|deseeded|deveined|stemmed|trimmed|cored|zested|juiced|mashed|crushed|beaten|whisked|room temperature|to taste|optional|divided)\b/i.test(s);
+    }
+    function startsLikeIngredientWord(s) {
+      return /^(salt|pepper|water|oil|olive oil|butter|onion|garlic|milk|egg|eggs|flour|sugar)\b/i.test(s);
+    }
+    function condenseIngredients(items) {
+      const out = []; for (let i = 0; i < items.length; i++) {
+        let cur = (items[i] || '').trim(); if (!cur) continue;
+        if (!out.length) { out.push(cur); continue; }
+        let prev = out[out.length - 1];
+        const opens = (prev.match(/\(/g) || []).length, closes = (prev.match(/\)/g) || []).length, inParens = opens > closes;
+        const newIng = startsLikeQuantity(cur) || startsLikeIngredientWord(cur);
+        if (inParens) {
+          cur = cur.replace(/^[),]\s*/, ''); const sep = /[,(]\s*$/.test(prev) ? '' : ', '; out[out.length - 1] = (prev + sep + cur).replace(/\s+\)/g, ')');
+        } else if (isDescriptorOnly(cur)) {
+          out[out.length - 1] = (prev + ' ' + cur).replace(/\s+\)/g, ')');
+        } else if (/\($/.test(prev)) {
+          out[out.length - 1] = prev + cur.replace(/^[),]\s*/, '');
+        } else if (newIng) {
+          out.push(cur);
+        } else {
+          out.push(cur); // default: new line (avoid over-merging)
+        }
+      } return out;
+    }
+
+    /* ---------- Recipes API ---------- */
+    function escapeAttr(s) { return String(s ?? '').replace(/"/g, '&quot;'); }
+    async function apiGenerateRecipe(userId, directions) {
+      const res = await fetch(`${API_BASE}/generate-recipe`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, user_directions: directions })
+      });
+      if (!res.ok) { const txt = await res.text().catch(() => ''); throw new Error(txt || `generate-recipe failed (${res.status})`); }
+      return res.json();
+    }
+    async function fetchUserRecipes(userId) {
+      const res = await fetch(`${API_BASE}/recipes`);
+      if (!res.ok) return [];
+      const all = await res.json();
+      const mine = (all || []).filter(r => r.source_user_id === userId);
+      mine.sort((a, b) => (b.recipe_id || 0) - (a.recipe_id || 0));
+      return mine;
+    }
+
+    /* ---------- Favorites helpers ---------- */
+    function favsKey(userId) { return `hh_favorites_${userId}`; }
+    function getFavs(userId) { try { return new Set(JSON.parse(localStorage.getItem(favsKey(userId)) || '[]')); } catch { return new Set(); } }
+    function saveFavs(userId, set) { localStorage.setItem(favsKey(userId), JSON.stringify(Array.from(set))); }
+    function recipeKey(r) { if (r?.recipe_id != null) return `id:${r.recipe_id}`; const name = (r?.recipe_name || r?.name || '').toLowerCase().trim(); return `name:${name}`; }
+
+    /* ---------- Card renderer (async) ---------- */
+    async function renderRecipeCard(container, r, index = 0) {
+      const userId = await getCurrentUserId();
+      const key = recipeKey(r);
+      const favs = getFavs(userId);
+      const isFav = favs.has(key);
+
+      const name = r.recipe_name || r.name || 'Untitled Recipe';
+      const type = r.recipe_type || '';
+      const kcal = (r.calories != null) ? `${r.calories} kcal` : '';
+      const protein = (r.protein != null) ? `${r.protein}g protein` : '';
+      const carbs = (r.carbs != null) ? `${r.carbs}g carbs` : '';
+      const fat = (r.fat != null) ? `${r.fat}g fat` : '';
+
+      const ingredients = condenseIngredients(normalizeList(r.ingredients));
+      const instructions = condenseSteps(normalizeList(r.instructions)).map(punctuate);
+
+      const card = document.createElement('div');
+      card.className = 'recipe-card';
+      card.style.setProperty('--delay', `${index * 120}ms`);
+      card.innerHTML = `
+      <button class="fav-btn" type="button" aria-label="Favorite" aria-pressed="${isFav ? 'true' : 'false'}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.716-4.25-9.333-7.5C.537 10.571 1.5 7 4.8 6.2 7.2 5.6 9 7 12 9.5 15 7 16.8 5.6 19.2 6.2 22.5 7 23.463 10.571 21.333 13.5 18.716 16.75 12 21 12 21z"/></svg>
+      </button>
+      <h4>${escapeHtml(name)}</h4>
+      <div class="recipe-meta">
+        ${type ? `<span>${escapeHtml(type)}</span>` : ''} 
+        ${kcal ? ` • ${kcal}` : ''} 
+        ${protein ? ` • ${protein}` : ''} 
+        ${carbs ? ` • ${carbs}` : ''} 
+        ${fat ? ` • ${fat}` : ''}
+      </div>
+      ${ingredients.length ? `<div class="recipe-section-title">Ingredients</div>` : ''}
+      ${ingredients.length ? `<ul class="recipe-list">${ingredients.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>` : ''}
+      ${instructions.length ? `<div class="recipe-section-title">Instructions</div>` : ''}
+      ${instructions.length ? `<ol class="recipe-list">${instructions.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ol>` : ''}
+      ${r.recipe_url ? `<a href="${escapeAttr(r.recipe_url)}" target="_blank" rel="noopener">Source</a>` : ''}
+    `;
+      card.querySelector('.fav-btn')?.addEventListener('click', async () => {
+        const uid = await getCurrentUserId();
+        const set = getFavs(uid);
+        const btn = card.querySelector('.fav-btn');
+        const wasPressed = btn.getAttribute('aria-pressed') === 'true';
+        const nowPressed = !wasPressed;
+        btn.setAttribute('aria-pressed', String(nowPressed));
+        if (nowPressed) set.add(key); else set.delete(key);
+        saveFavs(uid, set);
+        await updateFavoritesCount();
+        if (window._recipesMode === 'favorites' && !nowPressed) {
+          card.classList.add('is-removing');
+          card.addEventListener('transitionend', () => {
+            card.remove();
+            const grid = document.getElementById('dailyRecipesGrid');
+            if (grid && !grid.querySelector('.recipe-card')) {
+              showRecipesEmpty('No favorites yet. Tap the heart on any recipe to save it.');
+            }
+          }, { once: true });
+        }
+      });
+      container.appendChild(card);
+      return card;
+    }
+
+    let _favReloading = false;
+    async function favoritesChanged() {
+      if (_favReloading) return;
+      _favReloading = true;
+      try {
+        await updateFavoritesCount();
+        if (window._recipesMode === 'favorites') {
+          await loadFavoritesList();
+        }
+      } finally {
+        _favReloading = false;
+      }
+    }
+
+    /* ---------- Recipes tab logic (robust loader + regen + chat) ---------- */
+    const RECIPES_PER_DAY = 3;
+    function todayKey() { return new Date().toISOString().slice(0, 10); }
+    function recipesCacheKey(userId) { return `hh_daily_recipes_${userId}_${todayKey()}`; }
+
+    function setRecipesDate() { const d = document.getElementById('recipesDate'); if (d) d.textContent = todayKey(); }
+    function showRecipesEmpty(msg) {
+      const grid = document.getElementById('dailyRecipesGrid');
+      const empty = document.getElementById('dailyRecipesEmpty');
+      if (grid) grid.innerHTML = '';
+      if (empty) { empty.textContent = msg || 'No recipes yet.'; empty.style.display = 'block'; }
+    }
+
+    async function tryGenerateSet(userId) {
+      const prompts = [
+        'Healthy high-protein breakfast for one',
+        'Balanced lunch around 600 kcal',
+        'Flavorful dinner under 40 minutes'
+      ];
+      const out = [];
+      for (let i = 0; i < RECIPES_PER_DAY; i++) {
+        try {
+          const r = await apiGenerateRecipe(userId, prompts[i % prompts.length]);
+          if (r && (r.recipe_name || r.name)) out.push(r);
+        } catch (e) {
+          console.warn('generate-recipe failed', e);
+        }
+      }
+      return out;
+    }
+
+    async function renderRecipesList(recipes, limit = 3) {
+      const grid = document.getElementById('dailyRecipesGrid');
+      const empty = document.getElementById('dailyRecipesEmpty');
+      if (!grid) return;
+      grid.innerHTML = '';
+      if (!recipes || !recipes.length) {
+        if (empty) empty.style.display = 'block';
+        return;
+      }
+      if (empty) empty.style.display = 'none';
+      const n = Math.min(limit ?? recipes.length, recipes.length);
+      for (let i = 0; i < n; i++) {
+        await renderRecipeCard(grid, recipes[i], i);
+      }
+    }
+
+
+    async function loadDailyRecipes(force = false) {
+      const userId = await getCurrentUserId();
+      setRecipesDate();
+      const key = recipesCacheKey(userId);
+      let recipes = null;
+
+      if (!force) {
+        try { recipes = JSON.parse(localStorage.getItem(key) || 'null'); } catch { }
+      }
+
+      if (!recipes) {
+        recipes = await tryGenerateSet(userId);
+        if (!recipes.length) {
+          const mine = await fetchUserRecipes(userId);
+          recipes = mine.slice(0, RECIPES_PER_DAY);
+        }
+        if (recipes.length) localStorage.setItem(key, JSON.stringify(recipes));
+      }
+
+      await renderRecipesList(recipes, 3);
+      if (!recipes || !recipes.length) showRecipesEmpty('No recipes yet. Click “Regenerate” to try again.');
+    }
+
+    function bindRecipesUI() {
+      if (bindRecipesUI._bound) return;
+      bindRecipesUI._bound = true;
+
+      const filterSel = document.getElementById('recipesFilter');
+      filterSel?.addEventListener('change', async (e) => {
+        window._recipesMode = e.target.value;
+        applyRecipesModeUI();
+        if (window._recipesMode === 'favorites') {
+          await loadFavoritesList();
+        } else {
+          await loadDailyRecipes(false);
+        }
+      });
+
+
+      // Regenerate 
+      document.getElementById('regenRecipesBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        regenDailyRecipes();
+      });
+
+      // Chat
+      const form = document.getElementById('recipeChatForm');
+      const chat = document.getElementById('recipeChat');
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = document.getElementById('recipePrompt');
+        const text = (input?.value || '').trim();
+        if (!text) return;
+        input.value = '';
+
+        const you = document.createElement('div');
+        you.className = 'chat-msg chat-user';
+        you.textContent = text;
+        chat.appendChild(you);
+        chat.scrollTop = chat.scrollHeight;
+
+        const bot = document.createElement('div');
+        bot.className = 'chat-msg chat-bot';
+
+        try {
+          const userId = await getCurrentUserId();
+          const resp = await apiGenerateRecipe(userId, text);
+          let recipe = (resp && (resp.recipe_name || resp.name)) ? resp : null;
+          if (!recipe) {
+            const mine = await fetchUserRecipes(userId);
+            recipe = mine[0] || { name: 'Could not generate right now', instructions: 'Try again in a bit.' };
+          }
+          await renderRecipeCard(bot, recipe, 0);
+          chat.appendChild(bot);
+          chat.scrollTop = chat.scrollHeight;
+        } catch (err) {
+          bot.textContent = `Sorry, I couldn’t generate that. ${err.message || ''}`;
+          chat.appendChild(bot);
+          chat.scrollTop = chat.scrollHeight;
+        }
+      });
+    }
+
+    async function regenDailyRecipes() {
+      const btn = document.getElementById('regenRecipesBtn');
+      try {
+        btn?.setAttribute('disabled', '');
+        if (btn) btn.textContent = 'Refreshing…';
+        const userId = await getCurrentUserId();
+        localStorage.removeItem(recipesCacheKey(userId));
+        await loadDailyRecipes(true);
+      } catch (e) {
+        console.error('Regenerate failed:', e);
+        showRecipesEmpty('Could not regenerate; please try again.');
+      } finally {
+        if (btn) { btn.textContent = 'Regenerate'; btn.removeAttribute('disabled'); }
+      }
+    }
+    window.regenDailyRecipes = regenDailyRecipes; // for inline onclick
+
+    // current mode: 'all' = today's picks, 'favorites' = saved hearts
+    window._recipesMode = window._recipesMode || 'all';
+
+    async function initRecipesTab() {
+      bindRecipesUI();
+      try {
+        await updateFavoritesCount();
+        applyRecipesModeUI();
+        if (window._recipesMode === 'favorites') {
+          await loadFavoritesList();
+        } else {
+          await loadDailyRecipes(false);
+        }
+      } catch (e) {
+        console.error(e);
+        showRecipesEmpty('Could not load recipes.');
+      }
+    }
+    window.initRecipesTab = initRecipesTab;
+
+
+    async function updateFavoritesCount() {
+      try {
+        const uid = await getCurrentUserId();
+        const count = getFavs(uid).size;
+        const sel = document.getElementById('recipesFilter');
+        if (!sel) return;
+        const favOpt = [...sel.options].find(o => o.value === 'favorites');
+        if (favOpt) favOpt.textContent = count ? `Favorites (${count})` : 'Favorites';
+      } catch { }
+    }
+
+    function applyRecipesModeUI() {
+      const btn = document.getElementById('regenRecipesBtn');
+      const dateEl = document.getElementById('recipesDate');
+      const sel = document.getElementById('recipesFilter');
+      if (window._recipesMode === 'favorites') {
+        btn?.classList.add('hidden');
+        dateEl?.classList.add('hidden');
+        if (sel) sel.value = 'favorites';
+      } else {
+        btn?.classList.remove('hidden');
+        dateEl?.classList.remove('hidden');
+        if (sel) sel.value = 'all';
+      }
+    }
+
+    async function loadFavoritesList() {
+      const uid = await getCurrentUserId();
+      const favSet = getFavs(uid);
+      const mine = await fetchUserRecipes(uid); // all your saved recipes
+      // Match favorites by recipe_id OR name fallback (same logic as recipeKey)
+      const favRecipes = mine.filter(r => favSet.has(recipeKey(r)));
+      await renderRecipesList(favRecipes, Infinity);
+      if (!favRecipes.length) {
+        showRecipesEmpty('No favorites yet. Tap the heart on any recipe to save it.');
+      }
+    }
+
+    // Fetch user info
+    async function fetchCurrentUser() {
+      const userId = await getCurrentUserId();
+      const res = await fetch(`${API_BASE}/users/${userId}`);
+      if (!res.ok) throw new Error(`Failed to load user (${res.status})`);
+      return res.json();
+    }
+
+    async function initSettingsTab() {
+      const nameEl = document.getElementById('settingsName');
+      const emailEl = document.getElementById('settingsEmail');
+      const statusEl = document.getElementById('settingsStatus');
+      try {
+        statusEl && (statusEl.textContent = 'Loading…');
+        const user = await fetchCurrentUser();
+
+        nameEl && (nameEl.textContent = user?.name || '—');
+        emailEl && (emailEl.textContent = user?.email || '—');
+
+        // Optional: cache into session for later
+        const sess = JSON.parse(localStorage.getItem('hh_session') || '{}');
+        if (user?.id) sess.userId = user.id;
+        if (user?.email) sess.email = user.email;
+        if (user?.name) sess.name = user.name;
+        localStorage.setItem('hh_session', JSON.stringify(sess));
+
+        statusEl && (statusEl.textContent = '');
+      } catch (e) {
+        console.error(e);
+        statusEl && (statusEl.textContent = 'Could not load account info.');
+        // Fallback: show what we have in session
+        const sess = JSON.parse(localStorage.getItem('hh_session') || '{}');
+        nameEl && (nameEl.textContent = sess?.name || '—');
+        emailEl && (emailEl.textContent = sess?.email || '—');
+      }
+    }
+
+
+  </script>
+</body>
+
+</html>
