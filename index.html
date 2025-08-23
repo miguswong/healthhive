@@ -4,14 +4,21 @@
 
 
 <script>
-  if (!localStorage.getItem('auth')) {
-    location.replace('/login.html?next=/index.html');
-  }
-  
-  (async function guardStrict() {
+  // if (!localStorage.getItem('auth')) {
+  //   location.replace('/login.html?next=/index.html');
+  // }
+
+  (async function guard() {
     const KEY = 'hh_session';
     const raw = localStorage.getItem(KEY);
-    if (!raw) return location.replace('login.html');
+
+    // helper to send back to login with a return target
+    function goLogin() {
+      const next = encodeURIComponent(location.pathname + location.search + location.hash || '/');
+      location.replace(`/login.html?next=${next}`);
+    }
+
+    if (!raw) return goLogin();
 
     try {
       const sess = JSON.parse(raw);
@@ -19,19 +26,22 @@
         (Date.now() - sess.ts) < 7 * 24 * 60 * 60 * 1000;
       if (!fresh) throw new Error('stale');
 
-      const res = await fetch('https://backend-45111119432.us-central1.run.app/users');
+      // light “still valid” check
+      const res = await fetch('/api/users');
       if (!res.ok) throw new Error('users fetch failed');
+
       const users = await res.json();
       const exists = (users || []).some(u => (u.email || '').toLowerCase() === sess.email.toLowerCase());
       if (!exists) throw new Error('user missing');
 
-      window.CURRENT_USER = sess; // optional for greeting
+      window.CURRENT_USER = sess;
     } catch {
       localStorage.removeItem(KEY);
-      location.replace('login.html');
+      goLogin();
     }
   })();
 </script>
+
 
 <head>
   <meta charset="UTF-8" />
@@ -1512,7 +1522,6 @@
       window.addEventListener('hashchange', router);
       window.addEventListener('DOMContentLoaded', router);
 
-      // If buttons elsewhere still call showTab(), also push to hash for deep-linking:
       window.navigateTo = function (tabId) {
         const entry = Object.entries(routeToTab).find(([, id]) => id === tabId);
         const path = entry ? entry[0] : '/tutorial';
@@ -1572,7 +1581,7 @@
       window.location.replace('login.html');
     });
 
-    const API_BASE = 'https://backend-45111119432.us-central1.run.app';
+    const API_BASE = '/api';
 
     function getSession() {
       try { return JSON.parse(localStorage.getItem('hh_session') || '{}'); }

@@ -205,7 +205,7 @@
 
     <script>
 
-        const API_BASE = 'https://backend-45111119432.us-central1.run.app/';
+        const API_BASE = '/api';
 
         (function guard() {
             if (window.location.pathname.includes('login.html')) return;
@@ -325,7 +325,9 @@
                 const me = users.find(u => (u.email || '').toLowerCase() === email.toLowerCase());
 
                 saveSession({ email, userId: me?.id ?? null });
-                location.href = 'index.html';
+                const next = new URLSearchParams(location.search).get('next') || '/';
+                window.location.replace(next);
+
             } catch (err) {
                 alert(err.message || 'Login failed');
                 console.error(err);
@@ -348,7 +350,9 @@
                 const created = await apiCreateUser({ firstName, lastName, email, password });
                 await apiLogin(email, password);
                 saveSession({ email, userId: created?.id ?? null });
-                location.href = 'index.html';
+                const next = new URLSearchParams(location.search).get('next') || '/';
+                window.location.replace(next);
+
             } catch (err) {
                 alert(err.message);
                 console.error(err);
