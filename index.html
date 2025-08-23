@@ -2,7 +2,12 @@
 <html lang="en">
 
 
+
 <script>
+  if (!localStorage.getItem('auth')) {
+    location.replace('/login.html?next=/index.html');
+  }
+  
   (async function guardStrict() {
     const KEY = 'hh_session';
     const raw = localStorage.getItem(KEY);
