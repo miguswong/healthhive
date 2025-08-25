@@ -1,7 +1,2 @@
-<<<<<<< HEAD
 name,email,weight_goal,password
 Migus Wong,migus.wong@gmail.com,lose,123
-=======
-id,name,email
-1,Migus Wong,migus.wong@gmail.com 
->>>>>>> 955e0e3 (edited main.py and db_connection.py)

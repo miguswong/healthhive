@@ -1,80 +1,47 @@
 import psycopg2
 import os
-import time
 from dotenv import load_dotenv
-from urllib.parse import urlparse, parse_qs
-from psycopg2 import OperationalError
 
 # Load environment variables
 load_dotenv()
 
-# def get_db_connection():
-#     """
-#     Get a database connection
-#     """
-#     host = os.getenv('DB_HOST')
-#     port = os.getenv('DB_PORT', '5432')
-#     database = os.getenv('DB_NAME')
-#     username = os.getenv('DB_USER')
-#     password = os.getenv('DB_PASSWORD')
-    
-#     return psycopg2.connect(
-#         host=host,
-#         port=port,
-#         database=database,
-#         user=username,
-#         password=password
-#     )
+import os
+import psycopg2
 
 def get_db_connection():
     """
-    Open a psycopg2 connection.
-    Prefers DATABASE_URL (full DSN), falls back to DB_* env vars.
+    Get a database connection
     """
-    url = os.getenv("DATABASE_URL")
-    sslmode = None
+    # Cloud SQL connection name for Cloud Run
+    db_connection_name = os.environ.get('DB_CONNECTION_NAME')
+    print(db_connection_name)
+    # Credentials
+    db_user = os.getenv('DB_USER')
+    db_name = os.getenv('DB_NAME')
+    db_password = os.getenv('DB_PASSWORD')
 
-    if url:
-        # Parse DATABASE_URL like: postgresql://user:pass@host:5432/dbname?sslmode=require
-        parsed = urlparse(url)
-        if parsed.scheme not in ("postgres", "postgresql"):
-            raise ValueError(f"Unsupported DB scheme: {parsed.scheme}")
-
-        q = parse_qs(parsed.query)
-        sslmode = (q.get("sslmode", [None])[0]) or os.getenv("DB_SSLMODE")
-
-        dbname = parsed.path.lstrip("/")
-        if not dbname:
-            raise ValueError("DATABASE_URL is missing the database name (path).")
-
-        conn = psycopg2.connect(
-            host=parsed.hostname,
-            port=parsed.port or 5432,
-            dbname=dbname,
-            user=parsed.username,
-            password=parsed.password,
-            sslmode=sslmode or "prefer",
+    if db_connection_name:
+        # Use Unix domain socket for Cloud Run
+        print("Using Unix domain socket for Cloud SQL connection.")
+        unix_socket_dir = f"/cloudsql/{db_connection_name}"
+        return psycopg2.connect(
+            user=db_user,
+            password=db_password,
+            database=db_name,
+            host=unix_socket_dir
         )
-        return conn
-
-    # Fallback to individual env vars
-    host = os.getenv("DB_HOST")
-    port = int(os.getenv("DB_PORT", "5432"))
-    dbname = os.getenv("DB_NAME")
-    user = os.getenv("DB_USER")
-    password = os.getenv("DB_PASSWORD")
-    sslmode = os.getenv("DB_SSLMODE") or "prefer"  # use "require" if your server enforces TLS
-
-    missing = [k for k, v in [
-        ("DB_HOST", host), ("DB_NAME", dbname), ("DB_USER", user), ("DB_PASSWORD", password)
-    ] if not v]
-    if missing:
-        raise RuntimeError(f"Missing database env vars: {', '.join(missing)}")
-
-    return psycopg2.connect(
-        host=host, port=port, dbname=dbname, user=user, password=password, sslmode=sslmode
-    )
-
+    else:
+        # Fallback to local connection using host/port
+        print("Using fallback host/port for local or external connection.")
+        host = os.getenv('DB_HOST')
+        port = os.getenv('DB_PORT', '5432')
+        return psycopg2.connect(
+            host=host,
+            port=port,
+            database=db_name,
+            user=db_user,
+            password=db_password
+        )
 
 def initialize_database():
     """
@@ -90,6 +57,8 @@ def initialize_database():
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
                 email VARCHAR(255) UNIQUE NOT NULL,
+                weight_goal VARCHAR(20),
+                password VARCHAR(255) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -119,10 +88,42 @@ def initialize_database():
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                 date DATE NOT NULL,
                 weight DECIMAL(5,2),
+                weight_units VARCHAR(10),
                 avg_hr INTEGER,
                 high_hr INTEGER,
                 low_hr INTEGER,
                 notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Create exercise_definitions table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS exercise_definitions (
+                exercise_id SERIAL PRIMARY KEY,
+                exercise_name VARCHAR(100) NOT NULL,
+                avg_met_value DECIMAL(4,2) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Create recipes table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS recipes (
+                recipe_id SERIAL PRIMARY KEY,
+                recipe_name VARCHAR(255) NOT NULL,
+                recipe_type VARCHAR(50),
+                recipe_source VARCHAR(100),
+                source_user_id INTEGER,
+                recipe_url TEXT,
+                ingredients TEXT,
+                instructions TEXT,
+                directions TEXT,
+                calories INTEGER,
+                fat DECIMAL(5,2),
+                carbs DECIMAL(5,2),
+                protein DECIMAL(5,2),
+                extra_categories VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -135,7 +136,7 @@ def initialize_database():
         return {
             'success': True,
             'message': 'Database initialized successfully',
-            'tables_created': ['users', 'activities', 'biometrics']
+            'tables_created': ['users', 'activities', 'biometrics', 'exercise_definitions', 'recipes']
         }
         
     except psycopg2.Error as e:
@@ -232,12 +233,3 @@ def get_connection_info():
         'username': os.getenv('DB_USER'),
         'password_set': bool(os.getenv('DB_PASSWORD'))
     } 
-    
-def with_conn(fn, max_retries=2):
-    for i in range(max_retries + 1):
-        try:
-            with get_db_connection() as conn, conn.cursor() as cur:
-                    return fn(conn, cur)
-        except OperationalError:
-                if i == max_retries: raise
-                time.sleep(0.5 * (i + 1))
